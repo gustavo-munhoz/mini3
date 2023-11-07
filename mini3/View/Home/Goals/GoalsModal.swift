@@ -57,6 +57,8 @@ struct GoalsModal: View {
             
             Spacer()
         }
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1.45, contentMode: .fill)
         .padding(EdgeInsets(top: 40, leading: 40, bottom: 0, trailing: 40))
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))

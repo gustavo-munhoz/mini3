@@ -23,7 +23,7 @@ struct GoalsModalCell: View {
         }
         .padding(20)
         .foregroundStyle(.black)
-        .frame(maxWidth: .infinity, minHeight: geometry.size.height * 0.08)
+        .aspectRatio(5.65, contentMode: .fill)
         .background(goal.isCompleted ? .gray : .white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {

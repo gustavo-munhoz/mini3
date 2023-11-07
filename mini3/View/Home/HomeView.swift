@@ -17,7 +17,6 @@ struct HomeView: View {
                     ProjectsModal(
                         geometry: geometry,
                         projects: store.state.user?.projects)
-                    .aspectRatio(contentMode: .fill)
                 }
                 
                 VStack(spacing: 32) {

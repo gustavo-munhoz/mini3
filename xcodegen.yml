@@ -1,0 +1,25 @@
+name: mini3
+
+options:
+  bundleIdPrefix: com.munhoz.dev
+  deploymentTarget:
+    macOS: 14.0
+
+targets:
+  mini3:
+    settings:
+      DEVELOPMENT_TEAM: 7U55BCTM6U
+    type: application
+    platform: macOS
+    
+    sources:
+      - path: mini3
+
+    entitlements:
+      path: mini3/mini3.entitlements
+      properties:
+        com.apple.developer.aps-environment: development
+        com.apple.developer.icloud-container-identifiers: [iCloud.com.munhoz.dev.mini3]
+        com.apple.developer.icloud-services: [CloudKit]
+        com.apple.security.app-sandbox: false
+        com.apple.security.files.user-selected.read-only: true
