@@ -18,6 +18,7 @@ struct ProjectsModal: View {
                     .font(.system(size: 39))
                     .foregroundStyle(.black)
                 
+                
                 Spacer()
                 
                 Button(action: {}) {
@@ -26,6 +27,7 @@ struct ProjectsModal: View {
                         .foregroundStyle(.black)
                         .font(.system(size: 15))
                 }
+                .frame(alignment: .trailing)
                 .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay {
@@ -59,6 +61,7 @@ struct ProjectsModal: View {
                 }
             }
         }
+        .frame(maxWidth: .infinity)
         .frame(height: geometry.size.height)
         .aspectRatio(1, contentMode: .fit)
         .padding(EdgeInsets(top: 40, leading: 40, bottom: 0, trailing: 40))

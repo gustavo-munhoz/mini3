@@ -19,10 +19,13 @@ struct MonthNavigator: View {
             }
             .clipShape(Circle())
             
+            Spacer()
+            
             Text(monthName.uppercased())
                 .foregroundStyle(.black)
                 .font(.system(size: 15))
             
+            Spacer()
             
             Button(action: nextMonth) {
                 Image(systemName: "chevron.forward.circle")
@@ -30,9 +33,9 @@ struct MonthNavigator: View {
             }
             .clipShape(Circle())
         }
-        .frame(maxWidth: .infinity, alignment: .center)
-        .frame(height: 39)
-        
+        .padding(8)
+        .frame(maxWidth: .infinity)
+        .aspectRatio(13.2, contentMode: .fit)
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
