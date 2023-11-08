@@ -22,13 +22,13 @@ struct GoalsModalCell: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(20)
-        .foregroundStyle(.black)
+        .foregroundStyle(.white)
         .aspectRatio(5.65, contentMode: .fill)
-        .background(goal.isCompleted ? .gray : .white)
+        .background(goal.isCompleted ? .white : .gray.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.black, lineWidth: 1)
+                .stroke(.white, lineWidth: 1)
         }
         .onTapGesture {
             withAnimation {

@@ -15,21 +15,21 @@ struct ProjectModalCell: View {
         VStack {
             Rectangle()
                 .fill(.gray)
-                .frame(minWidth: 254, minHeight: 125)
+                .frame(minWidth: 126, minHeight: 62.5)
             
             Text(title)
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
                 .font(.system(size: 12))
-                .frame(minWidth: 254, maxWidth: .infinity, minHeight: 25, alignment: .leading)
+                .frame(minWidth: 126, maxWidth: .infinity, minHeight: 12.5, alignment: .leading)
             
         }
         .aspectRatio(1.63, contentMode: .fill)
         .padding(25)
-        .background(.white)
+        .background(.gray.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.black, lineWidth: 1)
+                .stroke(.white, lineWidth: 1)
         }
     }
 }

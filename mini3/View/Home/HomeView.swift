@@ -12,27 +12,28 @@ struct HomeView: View {
     
     var body: some View {
         GeometryReader { geometry in
-            HStack(spacing: 32) {
-                VStack(spacing: 32) {
-                    ProjectsModal(
-                        geometry: geometry,
-                        projects: store.state.user?.projects)
-                }
+            HStack(spacing: 40) {
+                ProjectsModal(
+                    geometry: geometry,
+                    projects: store.state.user?.projects)
                 
-                VStack(spacing: 32) {
-                    ProfileModal(name: store.state.user?.fullName)
+                VStack(spacing: 40) {
+                    // ProfileModal(name: store.state.user?.fullName)
                     
                     GoalsModal(
                         geometry: geometry,
                         goals: store.state.user?.goals)
                     
-                    Spacer()
+                    CalendarModal(geometry: geometry)
                 }
+                .frame(maxWidth: geometry.size.width * 0.35 - 80, maxHeight: geometry.size.height - 80)
             }
-            .padding()
+            .padding(40)
+            .frame(maxWidth: geometry.size.width, maxHeight: geometry.size.height)
         }
     }
 }
+
 
 #Preview {
     HomeView()

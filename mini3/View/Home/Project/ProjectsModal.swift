@@ -16,7 +16,7 @@ struct ProjectsModal: View {
             HStack {
                 Text("Projects")
                     .font(.system(size: 39))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                 
                 
                 Spacer()
@@ -24,15 +24,15 @@ struct ProjectsModal: View {
                 Button(action: {}) {
                     Text("VIEW ALL")
                         .frame(width: 134, height: 36)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.white)
                         .font(.system(size: 15))
                 }
                 .frame(alignment: .trailing)
-                .background(.white)
+                .background(.gray.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.black, lineWidth: 1)
+                        .stroke(.white, lineWidth: 1)
                 }
             }
             
@@ -41,8 +41,8 @@ struct ProjectsModal: View {
                     ScrollView {
                         LazyVGrid(
                             columns: [
-                                GridItem(.flexible(minimum: 320, maximum: geometry.size.width / 2 - 10)),
-                                GridItem(.flexible(minimum: 320, maximum: geometry.size.width / 2 - 10))
+                                GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10)),
+                                GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10))
                             ],
                             spacing: 25,
                             content: {
@@ -55,21 +55,19 @@ struct ProjectsModal: View {
                                 }
                             }
                         )
-
                     }
                     .scrollIndicators(.hidden)
                 }
             }
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: geometry.size.height)
-        .aspectRatio(1, contentMode: .fit)
-        .padding(EdgeInsets(top: 40, leading: 40, bottom: 0, trailing: 40))
-        .background(.white)
+        .padding(40)
+        .frame(maxWidth: geometry.size.width * 0.65 - 80, maxHeight: geometry.size.height - 80)
+        .aspectRatio(1, contentMode: .fill)
+        .background(.gray.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.black, lineWidth: 1)
+                .stroke(.white, lineWidth: 1)
         }
     }
 }

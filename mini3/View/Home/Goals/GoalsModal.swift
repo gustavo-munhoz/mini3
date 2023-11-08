@@ -17,28 +17,27 @@ struct GoalsModal: View {
             HStack {
                 Text("Goals")
                     .font(.system(size: 39))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                 
                 Spacer()
                 
                 Button(action: {}) {
                     Text("VIEW ALL")
                         .frame(width: 134, height: 36)
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.white)
                         .font(.system(size: 15))
                 }
-                .background(.white)
+                .background(.gray.opacity(0.2))
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .overlay {
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(.black, lineWidth: 1)
+                        .stroke(.white, lineWidth: 1)
                 }
             }
             
             MonthNavigator(currentMonth: $currentMonth)
             
             Group {
-                // maybe sort list
                 if let goals = goals, !goals.isEmpty {
                     ScrollView {
                         VStack {
@@ -54,17 +53,15 @@ struct GoalsModal: View {
                     }
                 }
             }
-            
-            Spacer()
         }
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1.45, contentMode: .fill)
-        .padding(EdgeInsets(top: 40, leading: 40, bottom: 0, trailing: 40))
-        .background(.white)
+        .padding(40)
+        .frame(maxWidth: geometry.size.width * 0.35 - 80)
+        .aspectRatio(1.36, contentMode: .fill)
+        .background(.gray.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.black, lineWidth: 1)
+                .stroke(.white, lineWidth: 1)
         }
     }
 }
