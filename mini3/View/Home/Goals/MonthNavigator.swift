@@ -15,32 +15,32 @@ struct MonthNavigator: View {
         HStack {
             Button(action: previousMonth) {
                 Image(systemName: "chevron.backward.circle")
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
             }
             .clipShape(Circle())
             
             Spacer()
             
             Text(monthName.uppercased())
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
                 .font(.system(size: 15))
             
             Spacer()
             
             Button(action: nextMonth) {
                 Image(systemName: "chevron.forward.circle")
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
             }
             .clipShape(Circle())
         }
         .padding(8)
         .frame(maxWidth: .infinity)
         .aspectRatio(13.2, contentMode: .fit)
-        .background(.white)
+        .background(.gray.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(.black, lineWidth: 1)
+                .stroke(.white, lineWidth: 1)
         }
     }
 
