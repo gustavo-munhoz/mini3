@@ -19,5 +19,8 @@ enum AppAction {
     
     // MARK: Goals
     case toggleGoalCompletion(Int)
+    
+    // MARK: Navigation
+    case navigateToView(ViewState)
 }
 

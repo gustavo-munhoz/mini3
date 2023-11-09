@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct IdeationView: View {
-    
+    @State var project: Project
     @State private var currentIndex: Int = 0
     @GestureState private var dragOffset: CGFloat = 0
-    @State var color = Color.blue
+    @State var color: Color = .blue
     @State private var originalWidth: CGFloat = 0
     @State private var originalHeight: CGFloat = 0
     
@@ -63,14 +63,6 @@ struct IdeationView: View {
         // O offset é então calculado baseando-se no tamanho dos círculos com a sobreposição
         return CGFloat(index - currentIndex) * (circleSize - overlap)
     }
-
-
-    
-}
-
-
-#Preview {
-    IdeationView()
 }
 
 struct CircleView: View {

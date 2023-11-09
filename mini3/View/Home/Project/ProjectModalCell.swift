@@ -9,15 +9,16 @@ import SwiftUI
 
 struct ProjectModalCell: View {
     var geometry: GeometryProxy
-    @State var title: String
-
+    @State var project: Project
+    @EnvironmentObject var store: AppStore
+    
     var body: some View {
         VStack {
             Rectangle()
                 .fill(.gray)
                 .frame(minWidth: 126, minHeight: 62.5)
             
-            Text(title)
+            Text(project.name)
                 .foregroundStyle(.white)
                 .font(.system(size: 12))
                 .frame(minWidth: 126, maxWidth: .infinity, minHeight: 12.5, alignment: .leading)
@@ -30,6 +31,9 @@ struct ProjectModalCell: View {
         .overlay {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(.white, lineWidth: 1)
+        }
+        .onTapGesture {
+            store.dispatch(.navigateToView(.ideation(project)))
         }
     }
 }
