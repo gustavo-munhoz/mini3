@@ -11,18 +11,25 @@ struct IdeationView: View {
     
     var body: some View {
         GeometryReader{ geometry in
-            let circleSize = geometry.size.width * 0.9
+            let circleSize = geometry.size.width * 1.25
             
             ZStack{
-                ForEach(0..<4, id: \.self) { index in
+                ForEach((0..<4).reversed(), id: \.self) { index in
                     VStack{
-                        CircleView(color: index.isMultiple(of: 2) ? .gray : .cyan, circleSize: .constant(circleSize), index: index)
+                        FirstStageView(color: index.isMultiple(of: 2) ? .gray : .cyan, circleSize: .constant(circleSize))
                             .scaleEffect(currentIndex == index ? 0.8 : 1.3)
                             .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
                             .disabled(currentIndex != index)
+                        
+                        
+//                        CircleView(color: index.isMultiple(of: 2) ? .gray : .cyan, circleSize: .constant(circleSize), index: index)
+//                            .scaleEffect(currentIndex == index ? 0.8 : 1.3)
+//                            .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
+//                            .disabled(currentIndex != index)
                     }
                 }
                 
+                //Buttons
                 HStack {
                     Button(action: {
                         withAnimation {
@@ -58,7 +65,7 @@ struct IdeationView: View {
     }
     
     private func offset(index: Int, geometry: GeometryProxy, circleSize: CGFloat) -> CGFloat {
-        let overlap = circleSize * 0.05
+        let overlap = circleSize * 0.055
         
         // O offset é então calculado baseando-se no tamanho dos círculos com a sobreposição
         return CGFloat(index - currentIndex) * (circleSize - overlap)
@@ -80,9 +87,10 @@ struct CircleView: View {
     
     var body: some View {
         ZStack {
-            Circle()
+            Ellipse()
+//            Circle()
                 .foregroundColor(color)
-                .frame(width: circleSize, height: circleSize)
+                .frame(width: circleSize, height: circleSize * 1.2)
 
             VStack{
                 Text("Etapa \(index + 1)") // Mostra o tamanho do círculo
@@ -94,7 +102,8 @@ struct CircleView: View {
 
 #Preview {
     GeometryReader{ geometry in
-        CircleView(color: Color.blue, circleSize: .constant(100), index: 1)
+        let circleSize = geometry.size.width * 0.9
+        CircleView(color: Color.blue, circleSize: .constant(circleSize), index: 1)
     }
 }
 

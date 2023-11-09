@@ -9,7 +9,7 @@ import Foundation
 
 class UnsplashService {
     
-    private let shared = UnsplashService()
+    static let shared = UnsplashService()
     private let baseURL = "https://api.unsplash.com/"
     
     private init() {}
