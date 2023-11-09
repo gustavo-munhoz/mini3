@@ -11,10 +11,7 @@ import SwiftUI
 struct mini3App: App {
     var body: some Scene {
         WindowGroup {
-            IdeationView()
-                .frame(minWidth: 800, maxWidth: .infinity, minHeight: 450, maxHeight: .infinity)
-//            HomeView()
-//                .frame(minWidth: 800, maxWidth: .infinity, minHeight: 450, maxHeight: .infinity)
+            ContentView()
         }
         .environmentObject(AppStore(
             initial: AppState(

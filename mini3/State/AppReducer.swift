@@ -29,6 +29,9 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             }
         }
     
+    case .navigateToView(let viewState):
+        newState.viewState = viewState
+        
     default:
         break
     }

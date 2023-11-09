@@ -49,7 +49,7 @@ struct ProjectsModal: View {
                                 ForEach(0..<projects.count, id: \.self) { index in
                                     ProjectModalCell(
                                         geometry: geometry,
-                                        title: projects[index].name
+                                        project: projects[index]
                                     )
                                     .padding(.all, 4)
                                 }

@@ -10,6 +10,8 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var store: AppStore
     
+    // TODO: CONTENT VIEW
+    
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 40) {
