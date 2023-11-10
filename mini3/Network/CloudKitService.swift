@@ -17,7 +17,7 @@ class CloudKitService {
         self.container = container
         self.publicDB = container.publicCloudDatabase
     }
-    
+
     // MARK: Account status
     
     func fetchAccountStatus(completion: @escaping (CKAccountStatus) -> Void) {
