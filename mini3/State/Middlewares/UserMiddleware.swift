@@ -18,8 +18,14 @@ let userMiddleware: Middleware<AppState, AppAction> = { state, action in
                 cloudKitService.fetchAccountStatus { accountStatus in
                     switch accountStatus {
                     case .available:
-                        promise(.success(.iCloudAccountAvailable))
-
+                        cloudKitService.fetchCurrentUser { result in
+                            switch result {
+                            case .success(let user):
+                                promise(.success(.userRecordFetchedOrCreated(user)))
+                            case .failure(let error):
+                                promise(.success(.cloudKitError(error)))
+                            }
+                        }
                     default:
                         promise(.success(.iCloudStatusError))
                     }

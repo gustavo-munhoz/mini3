@@ -35,17 +35,3 @@ struct HomeView: View {
         }
     }
 }
-
-
-#Preview {
-    HomeView()
-        .environmentObject(AppStore(
-            initial: AppState(
-                user: User(id: "1",
-                           fullName: "John Doe",
-                           email: "email@email.com",
-                           projects: Array(repeating: Project(id: 1, name: "Project"), count: 10)
-                        )),
-            reducer: appReducer,
-            middlewares: [userMiddleware]))
-}
