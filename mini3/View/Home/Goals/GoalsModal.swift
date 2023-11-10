@@ -51,6 +51,8 @@ struct GoalsModal: View {
                             }
                         }.padding(4)
                     }
+                } else {
+                    Spacer()
                 }
             }
         }

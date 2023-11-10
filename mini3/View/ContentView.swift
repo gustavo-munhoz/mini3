@@ -22,6 +22,7 @@ struct ContentView: View {
                     .frame(minWidth: 800, maxWidth: .infinity, minHeight: 450, maxHeight: .infinity)
             }
         }
+        .background(Color.appBlack)
         .animation(.easeInOut(duration: 0.15), value: store.state.viewState)
     }
 }

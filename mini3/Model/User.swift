@@ -6,6 +6,7 @@
 //
 
 import CloudKit
+import SwiftUI
 
 class User: Codable {
     var id: String
@@ -13,16 +14,17 @@ class User: Codable {
     var email: String
     var goals: [Goal]
     var projects: [Project]
+    var preferredColor: String
     
-    init(id: String, fullName: String, email: String, goals: [Goal] = [], projects: [Project] = []) {
+    init(id: String, fullName: String, email: String, goals: [Goal] = [], projects: [Project] = [], preferredColor: String = "AppPurple") {
         self.id = id
         self.fullName = fullName
         self.email = email
         self.goals = goals
         self.projects = projects
+        self.preferredColor = preferredColor
     }
 }
-
 
 // MARK: CloudKit setup
 extension User {
@@ -31,6 +33,7 @@ extension User {
         record["id"] = id as CKRecordValue
         record["fullName"] = fullName as CKRecordValue
         record["email"] = email as CKRecordValue
+        record["preferredColor"] = preferredColor as CKRecordValue
         
         let goalRecords = goals.map { $0.record }
         let projectRecords = projects.map { $0.record }
@@ -45,7 +48,8 @@ extension User {
               let fullName = record["fullName"] as? String,
               let email = record["email"] as? String,
               let goalRecords = record["goals"] as? [CKRecord],
-              let projectRecords = record["projects"] as? [CKRecord]
+              let projectRecords = record["projects"] as? [CKRecord],
+              let preferredColor = record["preferredColor"] as? String
         else {
             return nil
         }
@@ -53,6 +57,6 @@ extension User {
         let goals = goalRecords.compactMap { Goal(record: $0) }
         let projects = projectRecords.compactMap { Project(record: $0) }
         
-        self.init(id: id, fullName: fullName, email: email, goals: goals, projects: projects)
+        self.init(id: id, fullName: fullName, email: email, goals: goals, projects: projects, preferredColor: preferredColor)
     }
 }

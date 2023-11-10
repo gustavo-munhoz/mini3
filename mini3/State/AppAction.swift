@@ -22,5 +22,12 @@ enum AppAction {
     
     // MARK: Navigation
     case navigateToView(ViewState)
+    
+    // MARK: Calendar
+    case increaseMonth
+    case decreaseMonth
+    
+    // MARK: Projects
+    case createNewProject
 }
 

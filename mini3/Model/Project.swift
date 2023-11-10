@@ -17,7 +17,7 @@ class Project: Codable, Identifiable {
     var contentIdeas: [String]
     var finalIdea: String?
     
-    init(id: Int, name: String, currentStage: IdeationStage = .generalThemes,
+    init(id: Int, name: String = "New Project", currentStage: IdeationStage = .generalThemes,
          generalThemes: [String] = [], specificThemes: [String] = [],
          referenceLinks: [String] = [], contentIdeas: [String] = [],
          finalIdea: String? = nil)

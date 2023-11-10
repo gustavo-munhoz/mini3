@@ -8,8 +8,14 @@
 import SwiftUI
 
 struct ProjectsModal: View {
+    @EnvironmentObject var store: AppStore
     var geometry: GeometryProxy
     @State var projects: [Project]?
+    private var columns: [GridItem] { [
+        GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10)),
+        GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10))
+        ]
+    }
     
     var body: some View {
         VStack {
@@ -21,30 +27,26 @@ struct ProjectsModal: View {
                 
                 Spacer()
                 
-                Button(action: {}) {
-                    Text("VIEW ALL")
-                        .frame(width: 134, height: 36)
-                        .foregroundStyle(.white)
-                        .font(.system(size: 15))
+                Button(action: {
+                    withAnimation {
+                        store.dispatch(.createNewProject)
+                    }
+                }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.appBlack)
+                        .frame(width: 46, height: 36)
+                        .background(store.state.uiColor)
                 }
-                .frame(alignment: .trailing)
-                .background(.gray.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(.white, lineWidth: 1)
-                }
+                .buttonStyle(.plain)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
             }
             
             Group {
                 if let projects = projects, !projects.isEmpty {
                     ScrollView {
                         LazyVGrid(
-                            columns: [
-                                GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10)),
-                                GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10))
-                            ],
-                            spacing: 25,
+                            columns: self.columns, spacing: 25,
                             content: {
                                 ForEach(0..<projects.count, id: \.self) { index in
                                     ProjectModalCell(
@@ -57,6 +59,8 @@ struct ProjectsModal: View {
                         )
                     }
                     .scrollIndicators(.hidden)
+                } else {
+                    Spacer()
                 }
             }
         }
