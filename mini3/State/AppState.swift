@@ -10,7 +10,6 @@ import SwiftUI
 struct AppState {
     var viewState: ViewState = .home
     var user: User? = nil
-    var isCloudAccountAvailable = false
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
     

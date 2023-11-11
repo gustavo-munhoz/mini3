@@ -11,11 +11,10 @@ enum AppAction {
     
     // MARK: iCloud
     case checkiCloudAccountStatus
-    case fetchOrCreateUserRecord(String)
     case userRecordFetchedOrCreated(User)
     case cloudKitError(Error)
-    case iCloudAccountAvailable
     case iCloudStatusError
+    case requestUserRecord(fullName: String)
     
     // MARK: Goals
     case toggleGoalCompletion(Int)
