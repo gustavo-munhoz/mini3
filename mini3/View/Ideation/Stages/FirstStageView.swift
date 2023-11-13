@@ -15,41 +15,24 @@ struct FirstStageView: View {
         GeometryReader { geometry in
             ZStack{
                 Ellipse()
-                    .foregroundColor(color)
+                    .foregroundColor(.black)
+                    .overlay {
+                        Circle()
+                            .stroke(color, lineWidth: 5)
+                            
+                    }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                
-                TextField("...", text: $inputWord)
-                    .font(.title)
-                    .padding()
-                    .frame(width: geometry.size.width * 0.1, height: geometry.size.height * 0.2)
-                    .background(.clear)
-                    .multilineTextAlignment(.center)
-                    .onSubmit {
-                        let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
-                        if !inputWord.isEmpty {
-                            selectedWords.append(newWordPosition)
-                        }
-                        fetchRelatedWords(geometry: geometry)
-                        for i in selectedWords {
-                            print(i.word)
-                        }
-                        inputWord = ""
-                    }
-                    .textFieldStyle(.plain)
+
                 
                 ForEach(wordPositions.filter { !selectedWords.contains($0) }) { wordPosition in
-                    RelatedWordView(wordPosition: wordPosition,
-                                    isSelected: false,
-                                    fontSize: calculateFontSize(screenSize: geometry.size),
-                                    onWordTapped: {
+                    RelatedWordView(model: wordPosition,isSelected: false,fontSize: calculateFontSize(screenSize: geometry.size),
+                                    onSelected: {
                                         withAnimation(.easeInOut(duration: 1)){
                                             handleWordSelection(wordPosition: wordPosition)
-                                            fetchRelatedWords(with: wordPosition.word, geometry: geometry)
+                                            fetchRelatedWords(with: wordPosition.content, geometry: geometry)
                                         }
-                                    },
-                                    rect: rectangleAroundString(at: CGPoint(x: wordPosition.relativeX, y: wordPosition.relativeY),
-                                                                for: wordPosition.word,with: calculateFontSize(screenSize: geometry.size)))
+                                    })
                     .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -66,18 +49,32 @@ struct FirstStageView: View {
                 
                 ForEach(selectedWords) { wordPosition in
                     RelatedWordView(
-                        wordPosition: wordPosition,
+                        model: wordPosition,
                         isSelected: true,
                         fontSize: calculateFontSize(screenSize: geometry.size),
-                        onWordTapped: {
+                        onSelected: {
                             withAnimation(.easeOut(duration: 1)){
                                 handleWordSelection(wordPosition: wordPosition)
                             }
-                        }, rect: rectangleAroundString(at: CGPoint(x: wordPosition.relativeX, y: wordPosition.relativeY), for: wordPosition.word, with: calculateFontSize(screenSize: geometry.size))
-                    )
+                        })
                     .position(x: wordPosition.relativeX * geometry.size.width,
                               y: wordPosition.relativeY * geometry.size.height)
                 }
+                
+                TextView(color: color, geometry: geometry, onSend: { text in
+                    inputWord = text
+                    let position = generateNonOverlappingPosition(screenSize: geometry.size, word: <#T##String#>, fontSize: <#T##CGFloat#>)
+                    let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
+                    if !inputWord.isEmpty {
+                        selectedWords.append(newWordPosition)
+                    }
+                    fetchRelatedWords(geometry: geometry)
+                    for i in selectedWords {
+                        print(i.content)
+                    }
+                    inputWord = ""
+                })
+                .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
         }
         .alert(isPresented: $error, content: {
@@ -162,7 +159,6 @@ struct FirstStageView: View {
             }
         }
     }
-    
     private func calculateFontSize(screenSize: CGSize) -> CGFloat {
         let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
         let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
@@ -175,7 +171,6 @@ struct FirstStageView: View {
         
         return adjustedFontSize
     }
-    
     func randomPointInCircle(center: CGPoint, radius: CGFloat) -> CGPoint {
         let angle = CGFloat.random(in: 0..<2 * .pi)
         let randomRadius = CGFloat.random(in: 0..<radius)
@@ -184,14 +179,12 @@ struct FirstStageView: View {
             y: center.y + randomRadius * sin(angle)
         )
     }
-    
     func rectangleAroundString(at point: CGPoint, for word: String, with fontSize: CGFloat) -> CGRect {
         let estimatedWidth = CGFloat(word.count) * fontSize// Ajuste conforme a fonte
         let estimatedHeight = fontSize// Ajuste conforme a fonte
         let rect = CGRect(x: point.x - estimatedWidth / 2, y: point.y - estimatedHeight / 2, width: estimatedWidth, height: estimatedHeight)
         return rect
     }
-    
     func isRectangleInsideCircle(_ rect: CGRect, inCircle center: CGPoint, radius: CGFloat) -> Bool {
         // Encontrar o ponto no retângulo mais distante do centro do círculo
         let furthestPoint = CGPoint(
@@ -205,13 +198,10 @@ struct FirstStageView: View {
         // Se a distância for menor que o raio, então o retângulo está dentro do círculo
         return distanceToFurthestPoint <= radius
     }
-
-    
     func doRectanglesOverlap(_ rect1: CGRect, _ rect2: CGRect) -> Bool {
         print(rect1.intersects(rect2))
         return rect1.intersects(rect2)
     }
-
     func generateNonOverlappingPosition(screenSize: CGSize, word: String, fontSize: CGFloat) -> WordPosition {
         let circleCenter = CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
         let circleRadius = circleSize / 2
@@ -227,7 +217,7 @@ struct FirstStageView: View {
                 
                 // Verifique se o novo retângulo se sobrepõe a algum dos retângulos existentes
                 for existingWordPosition in wordPositions {
-                    let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.word, with: fontSize)
+                    let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.content, with: fontSize)
                     if wordRect.intersects(existingRect) {
                         overlapFound = true
                         break
@@ -248,17 +238,8 @@ struct FirstStageView: View {
     }
 }
 
-extension String {
-    func capitalizedFirst() -> String {
-        return prefix(1).capitalized + dropFirst()
-    }
-}
 
-extension CGPoint {
-    func distance(to point: CGPoint) -> CGFloat {
-        return sqrt((self.x - point.x) * (self.x - point.x) + (self.y - point.y) * (self.y - point.y))
-    }
-}
+
 
 
 

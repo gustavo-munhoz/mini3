@@ -7,13 +7,22 @@
 
 import Foundation
 
-class UnsplashService {
+final class UnsplashService: Service {
+
+    
+    typealias FetchContent = [UnsplashPhoto]
+    
+    typealias FetchType = String
+    
     
     static let shared = UnsplashService()
-    private let baseURL = "https://api.unsplash.com/"
+    let baseURL = "https://api.unsplash.com/"
     
     private init() {}
     
+    func fetch(using fetchType: String, completion: @escaping (Result<[UnsplashPhoto], Error>) -> Void) {
+        searchPhotos(query: fetchType, completion: completion)
+    }
     
     func searchPhotos(query: String, completion: @escaping (Result<[UnsplashPhoto], Error>) -> Void) {
         guard var urlComponents = URLComponents(string: baseURL + "search/photos") else {

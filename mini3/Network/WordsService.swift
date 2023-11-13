@@ -1,14 +1,22 @@
 import Foundation
 
-class WordsService {
+final class WordsService: Service {
+    
+    typealias FetchContent = [String]
+    typealias FetchType = String
     
     static let shared = WordsService()
-    private let wordsAPIBaseURL = "https://wordsapiv1.p.rapidapi.com/words"
+    let baseURL = "https://wordsapiv1.p.rapidapi.com/words"
     
     private init() {}
 
+    func fetch(using fetchType: String, completion: @escaping (Result<[String], Error>) -> Void) {
+        fetchRelatedWords(word: fetchType, completion: completion)
+    }
+    
+    
     func fetchRelatedWords(word: String, completion: @escaping (Result<[String], Error>) -> Void) {
-        guard let url = URL(string: "\(wordsAPIBaseURL)/\(word)/typeOf") else {
+        guard let url = URL(string: "\(baseURL)/\(word)/typeOf") else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "URL inválida"])))
             return
         }

@@ -1,13 +1,21 @@
 import Foundation
 
-class YoutubeService {
+final class YoutubeService: Service {
     
+    typealias FetchContent = [Item]
+    typealias FetchType = String
+
     static let shared = YoutubeService()
-    private let baseURL = "https://www.googleapis.com/youtube/v3/search"
+    let baseURL = "https://www.googleapis.com/youtube/v3/search"
     private let baseURLvideo = "https://www.youtube.com/watch?v="
     
     private init() {}
 
+    
+    func fetch(using fetchType: String, completion: @escaping (Result<[Item], Error>) -> Void) {
+        searchVideos(query: fetchType, completion: completion)
+    }
+    
     func searchVideos(query: String, completion: @escaping (Result<[Item], Error>) -> Void) {
         var urlComponents = URLComponents(string: baseURL)
         let queryItems = [

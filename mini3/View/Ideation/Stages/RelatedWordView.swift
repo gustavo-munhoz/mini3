@@ -3,33 +3,33 @@ import SwiftUI
 import Combine
 
 
-struct RelatedWordView: View {
-    @ObservedObject var wordPosition: WordPosition
+
+
+struct RelatedWordView: View, ViewRepresentable {
+    typealias Model = WordPosition
+    @ObservedObject var model: WordPosition
     var isSelected: Bool
     var fontSize: CGFloat
-    var onWordTapped: () -> Void
-    var rect : CGRect
+    var onSelected: () -> Void
 
     var body: some View {
         ZStack{
-            Rectangle().frame(width: rect.width, height: rect.height)
-            Text(wordPosition.word)
+            Text(model.content)
                 .font(.system(size: fontSize))
                 .foregroundColor(isSelected ? .blue : .black)
-                .opacity(wordPosition.isVisible ? 1 : 0)
-                .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
+                .opacity(model.isVisible ? 1 : 0)
+                .animation(.easeInOut(duration: 1), value: model.isVisible)
                 .onTapGesture {
-                    onWordTapped()
+                    onSelected()
                 }
         }
             
     }
 }
-
 #Preview {
     GeometryReader{ geometry in
-        RelatedWordView(wordPosition: WordPosition(word: "test", relativeX: 0, relativeY: 20), isSelected: false, fontSize: 16, onWordTapped: {
+        RelatedWordView(model: WordPosition(word: "test", relativeX: 0, relativeY: 20), isSelected: false, fontSize: 16, onSelected: {
             print()
-        }, rect: CGRect(x: 0, y: 20, width: 200, height: 200))
+        })
     }
 }
