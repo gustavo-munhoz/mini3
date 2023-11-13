@@ -18,37 +18,13 @@ let userMiddleware: Middleware<AppState, AppAction> = { state, action in
                 cloudKitService.fetchAccountStatus { accountStatus in
                     switch accountStatus {
                     case .available:
-                        CKContainer.default().fetchUserRecordID { recordID, error in
-                            if let recordID = recordID, error == nil {
-                                CKContainer.default().fetchShareParticipant(withUserRecordID: recordID) { shareParticipant, error in
-                                    if let error = error {
-                                        // Tratar o erro
-                                        promise(.success(.cloudKitError(error)))
-                                    } else if let components = shareParticipant?.userIdentity.nameComponents {
-                                        let fullName = [components.givenName, components.familyName].compactMap { $0 }.joined(separator: " ")
-                                        cloudKitService.fetchUser(fullName: fullName) { result in
-                                            switch result {
-                                            case .success(let user):
-                                                promise(.success(.userRecordFetchedOrCreated(user)))
-                                            case .failure(let error):
-                                                promise(.success(.cloudKitError(error)))
-                                            }
-                                        }
-                                    } else {
-                                        // Proceder sem o nome do usuário
-                                        cloudKitService.fetchUser(fullName: "Your name!") { result in
-                                            switch result {
-                                            case .success(let user):
-                                                promise(.success(.userRecordFetchedOrCreated(user)))
-                                            case .failure(let error):
-                                                promise(.success(.cloudKitError(error)))
-                                            }
-                                        }
-                                    }
-                                }
-                            } else {
-                                // Erro ao buscar recordID
-                                promise(.success(.iCloudStatusError))
+                        let fullName = state.user?.fullName ?? "Default User"
+                        cloudKitService.fetchUser(fullName: fullName) { result in
+                            switch result {
+                            case .success(let user):
+                                promise(.success(.userRecordFetchedOrCreated(user)))
+                            case .failure(let error):
+                                promise(.success(.cloudKitError(error)))
                             }
                         }
                     default:
@@ -58,7 +34,6 @@ let userMiddleware: Middleware<AppState, AppAction> = { state, action in
             }
         }
         .eraseToAnyPublisher()
-
         
     default:
         return Empty().eraseToAnyPublisher()

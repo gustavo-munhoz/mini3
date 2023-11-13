@@ -26,6 +26,7 @@ class CloudKitService {
             case .available:
                 print("icloud connected")
                 break
+                
             case .noAccount:
                 let alert = NSAlert()
                 alert.messageText = "iCloud Account Required"
@@ -79,13 +80,17 @@ class CloudKitService {
                         switch result {
                         case .success(let newUser):
                             completion(.success(newUser))
+                            print("- User record created: \(newUser.fullName)")
+                            
                         case .failure(let error):
                             completion(.failure(error))
+                            print("<> Error creating user record: \(error.localizedDescription)")
                         }
                         dispatchGroup.leave()
                     }
                 } else {
                     completion(.failure(error))
+                    print("<!> Unknown error: \(error.localizedDescription)")
                     dispatchGroup.leave()
                 }
 
@@ -93,6 +98,7 @@ class CloudKitService {
                 if let record = try? matchResults.first?.1.get() {
                     fetchedFullName = record["fullName"] as? String ?? fullName
                     fetchedPreferredColor = record["preferredColor"] as? String ?? "AppPurple"
+                    print("- Fetched name and color: \(fetchedFullName), \(fetchedPreferredColor)")
                     dispatchGroup.leave()
                 }
             }
@@ -105,7 +111,7 @@ class CloudKitService {
                 fetchedProjects = projects
                 
             case .failure(let error):
-                print("Error fetching projects: \(error)")
+                print("<!> Error fetching projects: \(error)")
             }
             dispatchGroup.leave()
         }
@@ -117,13 +123,14 @@ class CloudKitService {
                 fetchedGoals = goals
                 
             case .failure(let error):
-                print("Error fetching goals: \(error)")
+                print("<!> Error fetching goals: \(error)")
             }
             dispatchGroup.leave()
         }
 
         dispatchGroup.notify(queue: .main) {
             let user = User(fullName: fetchedFullName, goals: fetchedGoals, projects: fetchedProjects, preferredColor: fetchedPreferredColor)
+            print("- User created: \(fetchedFullName)")
             completion(.success(user))
         }
     }
@@ -141,6 +148,7 @@ class CloudKitService {
                 let records = matchResults.compactMap { try? $0.1.get() }
                 let projects = records.compactMap { Project(record: $0) }
                 completion(.success(projects))
+                print("- Fetched projects: \(projects)")
             }
         }
     }
@@ -158,6 +166,7 @@ class CloudKitService {
                 let records = matchResults.compactMap { try? $0.1.get() }
                 let goals = records.compactMap { Goal(record: $0) }
                 completion(.success(goals))
+                print("- Fetched goals: \(goals)")
             }
         }
     }
@@ -186,5 +195,21 @@ class CloudKitService {
         }
 
         privateDB.add(saveOperation)
+    }
+    
+    // MARK: Update data
+    
+    func saveProjectToCloudKit(project: Project) -> AnyPublisher<Void, Error> {
+        let record = project.record // Converter Project para CKRecord
+        
+        return Future<Void, Error> { promise in
+            let modifyOperation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+            modifyOperation.savePolicy = .changedKeys
+            modifyOperation.modifyRecordsResultBlock = {_ in
+                promise(.success(()))
+            }
+            self.privateDB.add(modifyOperation)
+        }
+        .eraseToAnyPublisher()
     }
 }

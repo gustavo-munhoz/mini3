@@ -28,5 +28,7 @@ enum AppAction {
     
     // MARK: Projects
     case createNewProject
+    case projectCreated(Project)
+    case projectSavedSuccessfully(Project)
 }
 

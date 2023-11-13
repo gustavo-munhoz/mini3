@@ -41,7 +41,9 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         
     // MARK: Projects
     case .createNewProject:
-        newState.user?.projects.append(Project(id: state.user?.projects.count ?? 1))
+        if let user = newState.user {
+            user.projects.append(Project(id: user.projects.count + 1))
+        }
         
     default:
         break
