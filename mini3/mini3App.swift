@@ -17,7 +17,7 @@ struct mini3App: App {
     
     var body: some Scene {
         WindowGroup {
-            IdeationView(project: Project(id: 1))
+            ContentView()
                 .onAppear {
                     store.dispatch(.checkiCloudAccountStatus)
                 }

@@ -28,7 +28,13 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     
     // MARK: Navigation
     case .navigateToView(let viewState):
-        newState.viewState = viewState
+        switch viewState {
+        case .ideation(let project):
+            newState.currentProject = project
+            newState.viewState = viewState
+        default:
+            newState.viewState = viewState
+        }
         
     // MARK: CalendarModal
     case .increaseMonth:
@@ -45,6 +51,23 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             user.projects.append(Project(id: user.projects.count + 1))
         }
         
+    // MARK: First Stage
+    case .selectWord(let wordPosition):
+        guard let project = newState.currentProject else { break }
+        if project.selectedWords.contains(wordPosition) {
+            // Deselecionar a palavra
+            newState.currentProject?.selectedWords.removeAll { $0 == wordPosition }
+        } else {
+            // Selecionar a palavra
+            newState.currentProject?.selectedWords.append(wordPosition)
+        }
+        
+    case .showWord(let wordPosition):
+        state.currentProject?.appearingWords.append(wordPosition)
+        
+    case .hideWord(let wordPosition):
+        newState.currentProject?.appearingWords.removeAll { $0.id == wordPosition.id }
+
     default:
         break
     }
