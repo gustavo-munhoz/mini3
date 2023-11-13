@@ -1,11 +1,19 @@
 import Foundation
 
-class GPTService {
+final class GPTService: Service {
+
+    typealias FetchContent = String
+    typealias FetchType = String
     
     static let shared = GPTService()
-    private let baseURL = "https://api.openai.com/v1/chat/completions"
+    let baseURL = "https://api.openai.com/v1/chat/completions"
     
     private init() {}
+
+    func fetch(using fetchType: FetchType, completion: @escaping (Result<String, Error>) -> Void) {
+        let messages = [createMessage(withRole: "user", content: fetchType)]
+        chatGPT(messages: messages, completion: completion)
+    }
     
     func chatGPT(messages: [Message], completion: @escaping (Result<String, Error>) -> Void) {
         guard let url = URL(string: baseURL) else {
@@ -50,4 +58,9 @@ class GPTService {
         }
         task.resume()
     }
+    
+    func createMessage(withRole role: String, content: String) -> Message {
+        return Message(role: role, content: content)
+    }
+
 }
