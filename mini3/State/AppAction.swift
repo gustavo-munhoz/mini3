@@ -7,8 +7,8 @@
 
 import CloudKit
 
+
 enum AppAction {
-    
     // MARK: iCloud
     case checkiCloudAccountStatus
     case userRecordFetchedOrCreated(User)
@@ -30,5 +30,10 @@ enum AppAction {
     case createNewProject
     case projectCreated(Project)
     case projectSavedSuccessfully(Project)
+    
+    // MARK: FirstStage
+    case selectWord(WordPosition)
+    case showWord(WordPosition)
+    case hideWord(WordPosition)
 }
 

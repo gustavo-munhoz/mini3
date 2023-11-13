@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-class User: Codable {
+class User {
     var fullName: String
     var goals: [Goal]
     var projects: [Project]

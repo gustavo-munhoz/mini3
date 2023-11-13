@@ -16,7 +16,7 @@ struct RelatedWordView: View, ViewRepresentable {
         ZStack{
             Text(model.content)
                 .font(.system(size: fontSize))
-                .foregroundColor(isSelected ? .blue : .black)
+                .foregroundColor(isSelected ? .blue : .white)
                 .opacity(model.isVisible ? 1 : 0)
                 .animation(.easeInOut(duration: 1), value: model.isVisible)
                 .onTapGesture {
