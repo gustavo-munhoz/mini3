@@ -11,11 +11,10 @@ enum AppAction {
     
     // MARK: iCloud
     case checkiCloudAccountStatus
-    case fetchOrCreateUserRecord(String)
     case userRecordFetchedOrCreated(User)
     case cloudKitError(Error)
-    case iCloudAccountAvailable
     case iCloudStatusError
+    case requestUserRecord(fullName: String)
     
     // MARK: Goals
     case toggleGoalCompletion(Int)
@@ -29,5 +28,7 @@ enum AppAction {
     
     // MARK: Projects
     case createNewProject
+    case projectCreated(Project)
+    case projectSavedSuccessfully(Project)
 }
 
