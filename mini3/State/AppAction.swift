@@ -35,5 +35,10 @@ enum AppAction {
     case selectWord(WordPosition)
     case showWord(WordPosition)
     case hideWord(WordPosition)
+    
+    // MARK: SecondStage
+    case selectConcept(ConceptPosition)
+    case showConcept(ConceptPosition)
+    case hideConcept(ConceptPosition)
 }
 

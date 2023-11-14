@@ -67,6 +67,24 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         
     case .hideWord(let wordPosition):
         newState.currentProject?.appearingWords.removeAll { $0.id == wordPosition.id }
+        
+        
+    // MARK: Second Stage
+    case .selectConcept(let conceptPosition):
+        guard let project = newState.currentProject else { break }
+        if project.selectedConcepts.contains(conceptPosition) {
+            newState.currentProject?.selectedConcepts.removeAll { $0 == conceptPosition }
+        } else {
+            newState.currentProject?.appearingConcepts.append(conceptPosition)
+        }
+        
+    case .showConcept(let conceptPosition):
+        state.currentProject?.appearingConcepts.append(conceptPosition)
+        
+    case .hideConcept(let conceptPosition):
+        state.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
+        
+        
 
     default:
         break

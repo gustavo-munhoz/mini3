@@ -4,8 +4,8 @@ import SwiftUI
 import Combine
 
 
-class ConceptPositionable: Identifiable, ObservableObject, Equatable, Positionable {
-    static func == (lhs: ConceptPositionable, rhs: ConceptPositionable) -> Bool {
+class ConceptPosition: Identifiable, ObservableObject, Equatable, Positionable {
+    static func == (lhs: ConceptPosition, rhs: ConceptPosition) -> Bool {
         return lhs.id == rhs.id
     }
     let id = UUID()

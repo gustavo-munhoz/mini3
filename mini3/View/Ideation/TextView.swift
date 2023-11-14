@@ -23,6 +23,7 @@ struct TextView: View {
                             .stroke(Color(color)))
                     .onSubmit {
                         onSend(suggestionText)
+                        suggestionText = ""
                     }
 
                 
