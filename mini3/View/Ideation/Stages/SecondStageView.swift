@@ -68,7 +68,7 @@ struct SecondStageView: View {
                         print(i.content)
                     }
                     inputText = ""
-                })
+                }, placeholder: "Write your suggestions here...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
         }

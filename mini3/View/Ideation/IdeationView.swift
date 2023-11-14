@@ -20,7 +20,6 @@ struct IdeationView: View {
             
             ZStack{
                 ForEach((0..<2), id: \.self) { index in
-                    
                     stages[index].view
                         .scaleEffect(currentIndex == index ? 0.8 : 1.3)
                         .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
@@ -40,16 +39,16 @@ struct IdeationView: View {
                 
                 //Buttons
                 HStack {
-                    Button(action: {
-                        withAnimation {
-                            currentIndex = max(0, currentIndex - 1)
-                        }
-                    }) {
-                        Image(systemName: "arrow.left")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .padding()
-                    }
+//                    Button(action: {
+//                        withAnimation {
+//                            currentIndex = max(0, currentIndex - 1)
+//                        }
+//                    }) {
+//                        Image(systemName: "arrow.left")
+//                            .resizable()
+//                            .frame(width: 40, height: 40)
+//                            .padding()
+//                    }
                     
                     Spacer()
                         .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)

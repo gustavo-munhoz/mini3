@@ -16,11 +16,10 @@ struct FirstStageView: View {
             ZStack{
                 // MARK: - Background
                 Ellipse()
-                    .foregroundColor(.black)
+                    .foregroundColor(.appBlack)
                     .overlay {
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width * 0.002)
-                            
                     }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -64,8 +63,8 @@ struct FirstStageView: View {
                 }
                 
                 // MARK: - Input words
-                TextView(color: color, geometry: geometry, onSend: { text in
 
+                TextView(color: .appPink, geometry: geometry, onSend: { text in
                     inputWord = text.capitalizedFirst()
                     let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
                     if !inputWord.isEmpty {
@@ -73,7 +72,7 @@ struct FirstStageView: View {
                     }
                     fetchRelatedWords(geometry: geometry)
                     inputWord = ""
-                })
+                }, placeholder: "Write your word ideas here...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
         }

@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct AppState {
-    var screenSize: CGSize = CGSize()
     var viewState: ViewState = .home
     var user: User? = nil
     var calendar: Calendar = Calendar.current

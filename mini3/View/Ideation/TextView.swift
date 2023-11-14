@@ -5,14 +5,14 @@ struct TextView: View {
     @State var color : Color
     @State var geometry : GeometryProxy
     var onSend: (String) -> Void
-
+    var placeholder: String
 
     var body: some View {
             
         VStack {
             Spacer()
-            HStack {
-                TextField("...", text: $suggestionText)
+            HStack(spacing: 21) {
+                TextField(placeholder, text: $suggestionText)
                     .font(.system(size: calculateFontSize(screenSize: geometry.size)))
                     .padding()
                     .foregroundColor(color)
@@ -60,12 +60,5 @@ struct TextView: View {
         let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
         
         return adjustedFontSize
-    }
-}
-
-#Preview {
-    GeometryReader{ geometry in
-        TextView(color: .appPink,geometry: geometry, onSend: {text in
-            print(text)})
     }
 }

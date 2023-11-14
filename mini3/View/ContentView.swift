@@ -12,6 +12,13 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
+            HStack {
+                LeftTabBarView()
+                Spacer()
+            }
+            .hidden(store.state.viewState == .home)
+            .zIndex(10)
+            
             if store.state.viewState == .home {
                 HomeView()
                     .frame(minWidth: 800, maxWidth: .infinity, minHeight: 450, maxHeight: .infinity)
