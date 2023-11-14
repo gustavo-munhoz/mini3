@@ -6,15 +6,15 @@ import AppKit
 
 
 
-class WordPosition: Identifiable, ObservableObject, Equatable, Positionable {
+class WordPosition: Identifiable, ObservableObject, Equatable, Positionable{
     static func == (lhs: WordPosition, rhs: WordPosition) -> Bool {
         return lhs.id == rhs.id
     }
     let id = UUID()
     var content: String
-    @Published var relativeX: Double
-    @Published var relativeY: Double
-    @Published var isVisible: Bool = true
+    var relativeX: Double
+    var relativeY: Double
+    var isVisible: Bool = true
     var cancellable: AnyCancellable?
 
     init(word: String, relativeX: Double, relativeY: Double, appearDelay: TimeInterval = 0) {

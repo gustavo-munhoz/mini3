@@ -2,8 +2,8 @@ import SwiftUI
 import Combine
 
 struct SecondStageView: View {
-    @State private var inputWord: String = ""
-    @State private var wordPositions: [ConceptPositionable] = []
+    @State private var inputText: String = ""
+    @State private var concepts: [ConceptPositionable] = []
     @State private var selectedWords: [ConceptPositionable] = []
     @State private var errorMessage: String?
     @State private var error : Bool = false
@@ -18,27 +18,25 @@ struct SecondStageView: View {
                     .foregroundColor(.black)
                     .overlay {
                         Circle()
-                            .stroke(color, lineWidth: 5)
+                            .stroke(color, lineWidth: geometry.size.width * 0.002)
                             
                     }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
                 
-                ForEach(wordPositions.filter { !selectedWords.contains($0) }) { wordPosition in
+                ForEach(concepts.filter { !selectedWords.contains($0) }) { wordPosition in
                     ConceptView(model: wordPosition,isSelected: false,onSelected: {
-                        withAnimation(.easeInOut(duration: 1)){
+                        withAnimation(.easeIn(duration: 1)){
                             handleWordSelection(concept: wordPosition)
-                            fetchRelatedWords(with: wordPosition.content, geometry: geometry)
+                            fetchConcepts(with: wordPosition.content, geometry: geometry)
                         }
                     }, fontSize: calculateFontSize(screenSize: geometry.size))
                     .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                             if !selectedWords.contains(wordPosition) {
-                                withAnimation(.easeOut(duration: 1)) {
                                     wordPosition.isVisible = false
-                                }
                             }
                         }
                     }
@@ -60,16 +58,16 @@ struct SecondStageView: View {
                 }
                 
                 TextView(color: color, geometry: geometry, onSend: { text in
-                    inputWord = text
-                    let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
-                    if !inputWord.isEmpty {
+                    inputText = text
+                    let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputText, fontSize: calculateFontSize(screenSize: geometry.size))
+                    if !inputText.isEmpty {
                         selectedWords.append(newWordPosition)
                     }
-                    fetchRelatedWords(geometry: geometry)
+                    fetchConcepts(with: inputText, geometry: geometry)
                     for i in selectedWords {
                         print(i.content)
                     }
-                    inputWord = ""
+                    inputText = ""
                 })
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
@@ -81,106 +79,55 @@ struct SecondStageView: View {
     private func handleWordSelection(concept: ConceptPositionable) {
         if let index = selectedWords.firstIndex(where: { $0 == concept }) {
             selectedWords.remove(at: index)
-            wordPositions.removeAll { $0.id == concept.id
+            concepts.removeAll { $0.id == concept.id
             }
         } else {
             selectedWords.append(concept)
         }
     }
-    private func fetchRelatedWords(with concept: String, geometry: GeometryProxy) {
-        let system = chatGPTService.createMessage(withRole: "system", content: "DESCREVER PROMPT...")
-        let user = chatGPTService.createMessage(withRole: "user", content: concept)
+    private func fetchConcepts(with concept: String, geometry: GeometryProxy) {
+        let system = chatGPTService.createMessage(withRole: "system", content: "You are a system for recommending phrases related to what the user has provided. The user will pass on some words and a concept, and you will suggest 5 phrases related to those words and the concept passed on by the user. These phrases must be longer than one word, with a minimum of 3 words and a maximum of 8. The phrases must not be long. You must return exactly the sentences, without auxiliary texts or explanations. Don't deviate from the requested format. The format that must be returned is: { \"concepts\" : [ \"sentence\",\"sentence\", \"sentence\", \"sentence\", \"sentence\"]} This should be all that is returned, nothing other than the format requested. No additional text or explanations are required")
+//        let words = chatGPTService.createMessage(withRole: "User", content: "\()")
+        let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
         
-        chatGPTService.chatGPT(messages: [system, user]) { result in
+        chatGPTService.chatGPT(messages: [system, message]) { result in
             switch result {
-            case .success(let response) :
-                print(response)
-            case .failure(let error):
-                print(error)
-            }
-        }
-        
-        //Exemplo
-//        chatGPTService.fetchRelatedWords(word: concept.capitalizedFirst()) { [self] result in
-//            DispatchQueue.main.async {
-//                switch result {
-//                case .success(let words):
-//                    var delay = 0.0
-//                    for word in words {
-//                        delay += 0.5
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-//                            withAnimation(.easeInOut(duration: 1)) {
-//                                let wp = generateNonOverlappingPosition(screenSize: geometry.size, word: word.capitalizedFirst(), fontSize: calculateFontSize(screenSize: geometry.size))
-//                                if !self.selectedWords.contains(wp) {
-//                                    self.wordPositions.append(wp)
-//                                    wp.cancellable = Timer.publish(every: 8, on: .main, in: .common)
-//                                        .autoconnect()
-//                                        .sink { _ in
-//                                            if !self.selectedWords.contains(wp) {
-//                                                self.wordPositions.removeAll { $0.id == wp.id }
-//                                            }
-//                                        }
-//                                }
-//                            }
-//                        }
-//                    }
-//                case .failure(let error):
-//                    self.errorMessage = error.localizedDescription
-//                    self.error = true
-//                }
-//            }
-//        }
-    }
-    private func fetchRelatedWords(geometry: GeometryProxy) {
-        guard !inputWord.isEmpty else {
-            self.error = true
-            self.errorMessage = "Por favor, insira uma palavra."
-            return
-        }
-        
-        chatGPTService.fetchRelatedWords(word: inputWord) { [self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let words):
+            case .success(let result):
+                let gptConcepts = chatGPTService.extractConcepts(from: result)
+                switch gptConcepts {
+                case .success(let jsonConcepts):
                     var delay = 0.0
-                    for word in words {
-                        delay += 0.5
+                    for concept in jsonConcepts {
+                        delay += 1
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                            withAnimation(.easeInOut(duration: 1)){
-                                let wp = generateNonOverlappingPosition(screenSize: geometry.size, word: word.capitalizedFirst(), fontSize: calculateFontSize(screenSize: geometry.size))
-                                if !self.selectedWords.contains(wp) {
-                                    self.wordPositions.append(wp)
-                                    wp.cancellable = Timer.publish(every: 8, on: .main, in: .common)
-                                        .autoconnect()
-                                        .sink { _ in
-                                            if !self.selectedWords.contains(wp) {
-                                                self.wordPositions.removeAll { $0.id == wp.id }
-                                            }
-                                        }
-                                }
+                            withAnimation(.easeIn(duration: 1)) {
+                                let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
+                                self.concepts.append(conceptPosition)
                             }
-                            
                         }
                     }
                 case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    self.error = true
+                    print("JSON to string error: \(error)")
                 }
+            case .failure(let error):
+                print("API call error: \(error)")
             }
         }
     }
-    private func calculateFontSize(screenSize: CGSize) -> CGFloat {
-        let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
-        let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
-        
-        // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
-        let scalingDimension = min(screenSize.width, screenSize.height)
-        
-        // Calcule o tamanho da fonte ajustado
-        let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
-        
-        return adjustedFontSize
-    }
+    
+    
+    func calculateFontSize(screenSize: CGSize) -> CGFloat {
+    let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
+    let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
+    
+    // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
+    let scalingDimension = min(screenSize.width, screenSize.height)
+    
+    // Calcule o tamanho da fonte ajustado
+    let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
+    
+    return adjustedFontSize
+}
     func randomPointInCircle(center: CGPoint, radius: CGFloat) -> CGPoint {
         let angle = CGFloat.random(in: 0..<2 * .pi)
         let randomRadius = CGFloat.random(in: 0..<radius)
@@ -217,7 +164,7 @@ struct SecondStageView: View {
         let circleRadius = circleSize / 2
         
         // Tente encontrar uma posição não sobreposta um número limitado de vezes
-        for _ in 0..<10000 {
+        for _ in 0..<100000 {
             let randomPoint = randomPointInCircle(center: circleCenter, radius: circleRadius)
             let wordRect = rectangleAroundString(at: randomPoint, for: word, with: fontSize)
             
@@ -226,7 +173,7 @@ struct SecondStageView: View {
                 var overlapFound = false
                 
                 // Verifique se o novo retângulo se sobrepõe a algum dos retângulos existentes
-                for existingWordPosition in wordPositions {
+                for existingWordPosition in concepts {
                     let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.content, with: fontSize)
                     if wordRect.intersects(existingRect) {
                         overlapFound = true

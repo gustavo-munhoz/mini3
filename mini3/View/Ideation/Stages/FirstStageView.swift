@@ -18,7 +18,7 @@ struct FirstStageView: View {
                     .foregroundColor(.black)
                     .overlay {
                         Circle()
-                            .stroke(color, lineWidth: 5)
+                            .stroke(color, lineWidth: geometry.size.width * 0.002)
                             
                     }
                     .frame(width: circleSize, height: circleSize)
@@ -63,7 +63,6 @@ struct FirstStageView: View {
                 
                 TextView(color: color, geometry: geometry, onSend: { text in
                     inputWord = text
-                    let position = generateNonOverlappingPosition(screenSize: geometry.size, word: <#T##String#>, fontSize: <#T##CGFloat#>)
                     let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
                     if !inputWord.isEmpty {
                         selectedWords.append(newWordPosition)
@@ -159,6 +158,7 @@ struct FirstStageView: View {
             }
         }
     }
+    
     private func calculateFontSize(screenSize: CGSize) -> CGFloat {
         let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
         let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela

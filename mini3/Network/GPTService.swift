@@ -39,6 +39,11 @@ final class GPTService: Service {
         
         // Fazendo a requisição
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            
+//            if let data = data, let rawResponse = String(data: data, encoding: .utf8) {
+//                print(rawResponse)
+//            }
+            
             guard let data = data, error == nil else {
                 completion(.failure(error!))
                 return
@@ -62,5 +67,20 @@ final class GPTService: Service {
     func createMessage(withRole role: String, content: String) -> Message {
         return Message(role: role, content: content)
     }
+    
+    func extractConcepts(from jsonString: String) -> Result<[String], Error> {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            return .failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string."]))
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(ConceptsResponse.self, from: jsonData)
+            return .success(response.concepts)
+        } catch {
+            return .failure(error)
+        }
+    }
+
 
 }
