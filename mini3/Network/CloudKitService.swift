@@ -13,8 +13,8 @@ class CloudKitService {
     let container: CKContainer
     let privateDB: CKDatabase
     
-    init(container: CKContainer = CKContainer(identifier: "iCloud.com.wozniack.dev.mini3")) {
-        self.container = container
+    init() {
+        self.container = CKContainer.default()
         self.privateDB = container.privateCloudDatabase
     }
 

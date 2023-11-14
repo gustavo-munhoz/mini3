@@ -18,12 +18,8 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     case .userRecordFetchedOrCreated(let user):
         newState.user = user
         
-
-    case .iCloudAccountAvailable:
-        newState.isCloudAccountAvailable = true
-        
     case .iCloudStatusError:
-        newState.isCloudAccountAvailable = false
+        break
         
     // MARK: Profile
     case .expandProfileModal:

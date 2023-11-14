@@ -28,9 +28,7 @@ struct HomeView: View {
                         Spacer()
                             .frame(width: 185, height: 118)
                         
-                        ProjectsModal(
-                            geometry: geometry,
-                            projects: store.state.user?.projects)
+                        ProjectsModal(geometry: geometry)
                     }
                 }
                 
