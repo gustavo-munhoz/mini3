@@ -1,11 +1,19 @@
 import Foundation
 
-class GPTService {
+final class GPTService: Service {
+
+    typealias FetchContent = String
+    typealias FetchType = String
     
     static let shared = GPTService()
-    private let baseURL = "https://api.openai.com/v1/chat/completions"
+    let baseURL = "https://api.openai.com/v1/chat/completions"
     
     private init() {}
+
+    func fetch(using fetchType: FetchType, completion: @escaping (Result<String, Error>) -> Void) {
+        let messages = [createMessage(withRole: "user", content: fetchType)]
+        chatGPT(messages: messages, completion: completion)
+    }
     
     func chatGPT(messages: [Message], completion: @escaping (Result<String, Error>) -> Void) {
         guard let url = URL(string: baseURL) else {
@@ -31,6 +39,11 @@ class GPTService {
         
         // Fazendo a requisição
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            
+//            if let data = data, let rawResponse = String(data: data, encoding: .utf8) {
+//                print(rawResponse)
+//            }
+            
             guard let data = data, error == nil else {
                 completion(.failure(error!))
                 return
@@ -50,4 +63,24 @@ class GPTService {
         }
         task.resume()
     }
+    
+    func createMessage(withRole role: String, content: String) -> Message {
+        return Message(role: role, content: content)
+    }
+    
+    func extractConcepts(from jsonString: String) -> Result<[String], Error> {
+        guard let jsonData = jsonString.data(using: .utf8) else {
+            return .failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON string."]))
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(ConceptsResponse.self, from: jsonData)
+            return .success(response.concepts)
+        } catch {
+            return .failure(error)
+        }
+    }
+
+
 }

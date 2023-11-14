@@ -2,9 +2,9 @@ import SwiftUI
 import Combine
 
 struct FirstStageView: View {
+    @EnvironmentObject var store: AppStore
+    
     @State private var inputWord: String = ""
-    @State private var wordPositions: [WordPosition] = []
-    @State private var selectedWords: [WordPosition] = []
     @State private var errorMessage: String?
     @State private var error : Bool = false
     @State var color : Color
@@ -14,46 +14,29 @@ struct FirstStageView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack{
+                // MARK: - Background
                 Ellipse()
-                    .foregroundColor(color)
+                    .foregroundColor(.appBlack)
+                    .overlay {
+                        Circle()
+                            .stroke(color, lineWidth: geometry.size.width * 0.002)
+                    }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-                
-                TextField("...", text: $inputWord)
-                    .font(.title)
-                    .padding()
-                    .frame(width: geometry.size.width * 0.1, height: geometry.size.height * 0.2)
-                    .background(.clear)
-                    .multilineTextAlignment(.center)
-                    .onSubmit {
-                        let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
-                        if !inputWord.isEmpty {
-                            selectedWords.append(newWordPosition)
-                        }
-                        fetchRelatedWords(geometry: geometry)
-                        for i in selectedWords {
-                            print(i.word)
-                        }
-                        inputWord = ""
-                    }
-                    .textFieldStyle(.plain)
-                
-                ForEach(wordPositions.filter { !selectedWords.contains($0) }) { wordPosition in
-                    RelatedWordView(wordPosition: wordPosition,
-                                    isSelected: false,
-                                    fontSize: calculateFontSize(screenSize: geometry.size),
-                                    onWordTapped: {
-                                        withAnimation(.easeInOut(duration: 1)){
-                                            handleWordSelection(wordPosition: wordPosition)
-                                            fetchRelatedWords(with: wordPosition.word, geometry: geometry)
-                                        }
-                                    },
-                                    rect: rectangleAroundString(at: CGPoint(x: wordPosition.relativeX, y: wordPosition.relativeY),
-                                                                for: wordPosition.word,with: calculateFontSize(screenSize: geometry.size)))
+
+                // MARK: - Appearing words
+                ForEach((store.state.currentProject?.appearingWords ?? []).filter { !(store.state.currentProject?.selectedWords ?? []).contains($0) }) { wordPosition in
+                    RelatedWordView(model: wordPosition,isSelected: false,fontSize: calculateFontSize(screenSize: geometry.size),
+                                onSelected: {
+                                    withAnimation(.easeInOut(duration: 1)){
+                                        store.dispatch(.selectWord(wordPosition))
+                                        fetchRelatedWords(with: wordPosition.content, geometry: geometry)
+                                    }
+                                })
                     .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            if !selectedWords.contains(wordPosition) {
+                            if !(store.state.currentProject?.selectedWords ?? []).contains(wordPosition) {
                                 withAnimation(.easeOut(duration: 1)) {
                                     wordPosition.isVisible = false
                                 }
@@ -64,59 +47,76 @@ struct FirstStageView: View {
                               y: wordPosition.relativeY * geometry.size.height)
                 }
                 
-                ForEach(selectedWords) { wordPosition in
+                // MARK: - Selected words
+                ForEach((store.state.currentProject?.selectedWords ?? [])) { wordPosition in
                     RelatedWordView(
-                        wordPosition: wordPosition,
+                        model: wordPosition,
                         isSelected: true,
                         fontSize: calculateFontSize(screenSize: geometry.size),
-                        onWordTapped: {
+                        onSelected: {
                             withAnimation(.easeOut(duration: 1)){
-                                handleWordSelection(wordPosition: wordPosition)
+                                store.dispatch(.selectWord(wordPosition))
                             }
-                        }, rect: rectangleAroundString(at: CGPoint(x: wordPosition.relativeX, y: wordPosition.relativeY), for: wordPosition.word, with: calculateFontSize(screenSize: geometry.size))
-                    )
+                        })
                     .position(x: wordPosition.relativeX * geometry.size.width,
                               y: wordPosition.relativeY * geometry.size.height)
                 }
+                
+                // MARK: - Input words
+
+                TextView(color: .appPink, geometry: geometry, onSend: { text in
+                    inputWord = text.capitalizedFirst()
+                    let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
+                    if !inputWord.isEmpty {
+                        store.dispatch(.selectWord(newWordPosition))
+                    }
+                    fetchRelatedWords(geometry: geometry)
+                    inputWord = ""
+                }, placeholder: "Write your word ideas here...")
+                .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
         }
         .alert(isPresented: $error, content: {
-            Alert(title: Text("Erro"), message: Text(errorMessage ?? "Erro desconhecido"), dismissButton: .default(Text("OK")))
+            Alert(title: Text("Error"), message: Text("We don't have any suggestions.\n Sorry :("), dismissButton: .default(Text("OK")))
         })
     }
-    private func handleWordSelection(wordPosition: WordPosition) {
-        if let index = selectedWords.firstIndex(where: { $0 == wordPosition }) {
-            selectedWords.remove(at: index)
-            wordPositions.removeAll { $0.id == wordPosition.id
+    
+    private func handleFetchedWords(words: [String], geometry: GeometryProxy) {
+        var delay = 0.0
+        for word in words {
+            delay += 0.5
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.easeInOut(duration: 1)) {
+                    let wp = generateNonOverlappingPosition(
+                        screenSize: geometry.size,
+                        word: word.capitalizedFirst(),
+                        fontSize: calculateFontSize(screenSize: geometry.size)
+                    )
+                    handleWordAppearance(wordPosition: wp)
+                }
             }
-        } else {
-            selectedWords.append(wordPosition)
         }
     }
+
+    private func handleWordAppearance(wordPosition: WordPosition) {
+        if !(store.state.currentProject?.selectedWords.contains(wordPosition) ?? false) {
+            store.dispatch(.showWord(wordPosition))
+            wordPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
+                .autoconnect()
+                .sink { _ in
+                    if !(store.state.currentProject?.selectedWords.contains(wordPosition) ?? false) {
+                        store.dispatch(.hideWord(wordPosition))
+                    }
+                }
+        }
+    }
+
     private func fetchRelatedWords(with word: String, geometry: GeometryProxy) {
         wordsService.fetchRelatedWords(word: word.capitalizedFirst()) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let words):
-                    var delay = 0.0
-                    for word in words {
-                        delay += 0.5
-                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                            withAnimation(.easeInOut(duration: 1)) {
-                                let wp = generateNonOverlappingPosition(screenSize: geometry.size, word: word.capitalizedFirst(), fontSize: calculateFontSize(screenSize: geometry.size))
-                                if !self.selectedWords.contains(wp) {
-                                    self.wordPositions.append(wp)
-                                    wp.cancellable = Timer.publish(every: 8, on: .main, in: .common)
-                                        .autoconnect()
-                                        .sink { _ in
-                                            if !self.selectedWords.contains(wp) {
-                                                self.wordPositions.removeAll { $0.id == wp.id }
-                                            }
-                                        }
-                                }
-                            }
-                        }
-                    }
+                    handleFetchedWords(words: words, geometry: geometry)
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
                     self.error = true
@@ -124,6 +124,7 @@ struct FirstStageView: View {
             }
         }
     }
+
     private func fetchRelatedWords(geometry: GeometryProxy) {
         guard !inputWord.isEmpty else {
             self.error = true
@@ -135,26 +136,7 @@ struct FirstStageView: View {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let words):
-                    var delay = 0.0
-                    for word in words {
-                        delay += 0.5
-                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                            withAnimation(.easeInOut(duration: 1)){
-                                let wp = generateNonOverlappingPosition(screenSize: geometry.size, word: word.capitalizedFirst(), fontSize: calculateFontSize(screenSize: geometry.size))
-                                if !self.selectedWords.contains(wp) {
-                                    self.wordPositions.append(wp)
-                                    wp.cancellable = Timer.publish(every: 8, on: .main, in: .common)
-                                        .autoconnect()
-                                        .sink { _ in
-                                            if !self.selectedWords.contains(wp) {
-                                                self.wordPositions.removeAll { $0.id == wp.id }
-                                            }
-                                        }
-                                }
-                            }
-                            
-                        }
-                    }
+                    handleFetchedWords(words: words, geometry: geometry)
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
                     self.error = true
@@ -205,13 +187,12 @@ struct FirstStageView: View {
         // Se a distância for menor que o raio, então o retângulo está dentro do círculo
         return distanceToFurthestPoint <= radius
     }
-
     
     func doRectanglesOverlap(_ rect1: CGRect, _ rect2: CGRect) -> Bool {
         print(rect1.intersects(rect2))
         return rect1.intersects(rect2)
     }
-
+    
     func generateNonOverlappingPosition(screenSize: CGSize, word: String, fontSize: CGFloat) -> WordPosition {
         let circleCenter = CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
         let circleRadius = circleSize / 2
@@ -226,8 +207,8 @@ struct FirstStageView: View {
                 var overlapFound = false
                 
                 // Verifique se o novo retângulo se sobrepõe a algum dos retângulos existentes
-                for existingWordPosition in wordPositions {
-                    let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.word, with: fontSize)
+                for existingWordPosition in (store.state.currentProject?.appearingWords ?? []) {
+                    let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.content, with: fontSize)
                     if wordRect.intersects(existingRect) {
                         overlapFound = true
                         break
@@ -246,22 +227,4 @@ struct FirstStageView: View {
         // Se todas as tentativas falharem, retorne uma posição padrão (centro, por exemplo)
         return WordPosition(word: word, relativeX: 0.5, relativeY: 0.5)
     }
-}
-
-extension String {
-    func capitalizedFirst() -> String {
-        return prefix(1).capitalized + dropFirst()
-    }
-}
-
-extension CGPoint {
-    func distance(to point: CGPoint) -> CGFloat {
-        return sqrt((self.x - point.x) * (self.x - point.x) + (self.y - point.y) * (self.y - point.y))
-    }
-}
-
-
-
-#Preview {
-    FirstStageView(color: .gray ,circleSize: .constant(1000))
 }

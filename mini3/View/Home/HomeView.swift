@@ -34,7 +34,6 @@ struct HomeView: View {
                     }
                 }
                 
-                
                 VStack(spacing: 40) {
                     
                     GoalsModal(

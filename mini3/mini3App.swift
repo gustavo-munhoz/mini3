@@ -12,7 +12,7 @@ struct mini3App: App {
     @StateObject var store = AppStore(
         initial: AppState(),
         reducer: appReducer,
-        middlewares: [userMiddleware]
+        middlewares: [userMiddleware, cloudKitMiddleware]
     )
     
     var body: some Scene {

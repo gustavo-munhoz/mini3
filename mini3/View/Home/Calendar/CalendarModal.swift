@@ -119,14 +119,12 @@ extension Calendar {
             
             weekArray[weekday - 1] = date
             
-            // Se é sábado ou último dia do mês, adicione a semana ao mês
             if weekday == 7 || day == range.count {
                 monthArray.append(weekArray)
                 weekArray = [Date?](repeating: nil, count: 7)
             }
         }
         
-        // Certifique-se de adicionar a última semana se ela não foi adicionada
         if weekArray.contains(where: { $0 != nil }) {
             monthArray.append(weekArray)
         }

@@ -11,21 +11,22 @@ import AppKit
 
 class CloudKitService {
     let container: CKContainer
-    let publicDB: CKDatabase
+    let privateDB: CKDatabase
     
-    init(container: CKContainer = .default()) {
+    init(container: CKContainer = CKContainer(identifier: "iCloud.com.wozniack.dev.mini3")) {
         self.container = container
-        self.publicDB = container.publicCloudDatabase
+        self.privateDB = container.privateCloudDatabase
     }
 
     // MARK: Account status
     
     func fetchAccountStatus(completion: @escaping (CKAccountStatus) -> Void) {
-        CKContainer.default().accountStatus { (accountStatus, error) in
+        self.container.accountStatus { (accountStatus, error) in
             switch accountStatus {
             case .available:
                 print("icloud connected")
                 break
+                
             case .noAccount:
                 let alert = NSAlert()
                 alert.messageText = "iCloud Account Required"
@@ -60,90 +61,155 @@ class CloudKitService {
     
     // MARK: User-related methods
     
-    func fetchOrCreateUser(withRecordName recordName: String, completion: @escaping (Result<User, Error>) -> Void) {
-        let recordID = CKRecord.ID(recordName: recordName)
-        publicDB.fetch(withRecordID: recordID) { fetchedRecord, error in
-            if let fetchedRecord = fetchedRecord {
-                if let user = User(record: fetchedRecord) {
-                    completion(.success(user))
-                } else {
-                    let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Record schema mismatch"])
-                    completion(.failure(error))
-                }
-            } else {
-                let newRecord = CKRecord(recordType: "User")
-                self.publicDB.save(newRecord) { savedRecord, error in
-                    if let savedRecord = savedRecord {
-                        if let user = User(record: savedRecord) {
-                            completion(.success(user))
-                        } else {
-                            let error = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Record schema mismatch"])
+    func fetchUser(fullName: String, completion: @escaping (Result<User, Error>) -> Void) {
+        let predicate = NSPredicate(value: true)
+        let query = CKQuery(recordType: "UserPreferences", predicate: predicate)
+        let dispatchGroup = DispatchGroup()
+
+        var fetchedProjects = [Project]()
+        var fetchedGoals = [Goal]()
+        var fetchedFullName = fullName
+        var fetchedPreferredColor = "AppPurple"
+
+        dispatchGroup.enter()
+        privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 1) { result in
+            switch result {
+            case .failure(let error as NSError):
+                if error.domain == CKErrorDomain, error.code == CKError.unknownItem.rawValue {
+                    self.createUserPreferencesAndAssociatedData(fullName: fullName) { result in
+                        switch result {
+                        case .success(let newUser):
+                            completion(.success(newUser))
+                            print("- User record created: \(newUser.fullName)")
+                            
+                        case .failure(let error):
                             completion(.failure(error))
+                            print("<> Error creating user record: \(error.localizedDescription)")
                         }
-                    } else if let error = error {
-                        completion(.failure(error))
-                    } else {
-                        completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error"])))
+                        dispatchGroup.leave()
                     }
+                } else {
+                    completion(.failure(error))
+                    print("<!> Unknown error: \(error.localizedDescription)")
+                    dispatchGroup.leave()
+                }
+
+            case .success((let matchResults, _)):
+                if let record = try? matchResults.first?.1.get() {
+                    fetchedFullName = record["fullName"] as? String ?? fullName
+                    fetchedPreferredColor = record["preferredColor"] as? String ?? "AppPurple"
+                    print("- Fetched name and color: \(fetchedFullName), \(fetchedPreferredColor)")
+                    dispatchGroup.leave()
                 }
             }
         }
+
+        dispatchGroup.enter()
+        fetchProjects { result in
+            switch result {
+            case .success(let projects):
+                fetchedProjects = projects
+                
+            case .failure(let error):
+                print("<!> Error fetching projects: \(error)")
+            }
+            dispatchGroup.leave()
+        }
+
+        dispatchGroup.enter()
+        fetchGoals { result in
+            switch result {
+            case .success(let goals):
+                fetchedGoals = goals
+                
+            case .failure(let error):
+                print("<!> Error fetching goals: \(error)")
+            }
+            dispatchGroup.leave()
+        }
+
+        dispatchGroup.notify(queue: .main) {
+            let user = User(fullName: fetchedFullName, goals: fetchedGoals, projects: fetchedProjects, preferredColor: fetchedPreferredColor)
+            print("- User created: \(fetchedFullName)")
+            completion(.success(user))
+        }
     }
     
-    func updateUser(_ user: User, completion: @escaping (Result<User, Error>) -> Void) {
-        publicDB.save(user.record) { savedRecord, error in
-            if let error = error {
+    func fetchProjects(completion: @escaping (Result<[Project], Error>) -> Void) {
+        let predicate = NSPredicate(value: true)
+        let query = CKQuery(recordType: "Project", predicate: predicate)
+
+        privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
+            switch result {
+            case .failure(let error):
                 completion(.failure(error))
-            } else if let savedRecord = savedRecord {
-                if let updatedUser = User(record: savedRecord) {
-                    completion(.success(updatedUser))
-                }
-            } else {
-                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error"])))
+                
+            case .success((let matchResults, _)):
+                let records = matchResults.compactMap { try? $0.1.get() }
+                let projects = records.compactMap { Project(record: $0) }
+                completion(.success(projects))
+                print("- Fetched projects: \(projects)")
             }
         }
     }
 
-    func fetchCurrentUser(completion: @escaping (Result<User, Error>) -> Void) {
-        container.fetchUserRecordID { userRecordID, error in
-            if let error = error {
-                completion(.failure(error))
-            } else if let userRecordID = userRecordID {
-                self.fetchOrCreateUser(withRecordName: userRecordID.recordName) { result in
-                    switch result {
-                    case .success(let user):
-                        completion(.success(user))
-                    case .failure(let error):
-                        completion(.failure(error))
-                    }
-                }
-            } else {
-                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown error"])))
-            }
-        }
-    }
-    
-    // TODO: Cache
-    
-    private func cacheUser(_ user: User) {
-        do {
-            let userData = try JSONEncoder().encode(user)
-            UserDefaults.standard.set(userData, forKey: "cachedUser")
-        } catch {
-            print("Failed to encode user: \(error)")
-        }
-    }
+    func fetchGoals(completion: @escaping (Result<[Goal], Error>) -> Void) {
+        let predicate = NSPredicate(value: true)
+        let query = CKQuery(recordType: "Goal", predicate: predicate)
 
-    private func getCachedUser() -> User? {
-        if let userData = UserDefaults.standard.data(forKey: "cachedUser") {
-            do {
-                let user = try JSONDecoder().decode(User.self, from: userData)
-                return user
-            } catch {
-                print("Failed to decode user: \(error)")
-                return nil
+        privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { result in
+            switch result {
+            case .failure(let error):
+                completion(.failure(error))
+                
+            case .success((let matchResults, _)):
+                let records = matchResults.compactMap { try? $0.1.get() }
+                let goals = records.compactMap { Goal(record: $0) }
+                completion(.success(goals))
+                print("- Fetched goals: \(goals)")
             }
         }
-        return nil
+    }
+    
+    func createUserPreferencesAndAssociatedData(fullName: String, completion: @escaping (Result<User, Error>) -> Void) {
+        // Criar e configurar o registro 'UserPreferences'
+        let newUserPreferencesRecord = CKRecord(recordType: "UserPreferences")
+        newUserPreferencesRecord["fullName"] = fullName
+        newUserPreferencesRecord["preferredColor"] = "AppPurple"
+
+        // Criar e configurar o registro 'Project'
+        let newProjectRecord = CKRecord(recordType: "Project")
+        // Configure os campos do projeto conforme necessário
+
+        // Criar e configurar o registro 'Goal'
+        let newGoalRecord = CKRecord(recordType: "Goal")
+        // Configure os campos da meta conforme necessário
+
+        // Salvar os registros no CloudKit
+        let recordsToSave = [newUserPreferencesRecord, newProjectRecord, newGoalRecord]
+        let saveOperation = CKModifyRecordsOperation(recordsToSave: recordsToSave, recordIDsToDelete: nil)
+
+        saveOperation.modifyRecordsResultBlock = { savedRecords in
+            let user = User(fullName: fullName, goals: [], projects: [], preferredColor: "AppPurple")
+            completion(.success(user))
+        }
+
+        privateDB.add(saveOperation)
+    }
+    
+    // MARK: Update data
+    
+    func saveProjectToCloudKit(project: Project) -> AnyPublisher<Void, Error> {
+        let record = project.record // Converter Project para CKRecord
+        
+        return Future<Void, Error> { promise in
+            let modifyOperation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+            modifyOperation.savePolicy = .changedKeys
+            modifyOperation.modifyRecordsResultBlock = {_ in
+                promise(.success(()))
+            }
+            self.privateDB.add(modifyOperation)
+        }
+        .eraseToAnyPublisher()
     }
 }

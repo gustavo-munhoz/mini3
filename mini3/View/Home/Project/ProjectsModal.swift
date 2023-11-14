@@ -10,7 +10,6 @@ import SwiftUI
 struct ProjectsModal: View {
     @EnvironmentObject var store: AppStore
     var geometry: GeometryProxy
-    @State var projects: [Project]?
     private var columns: [GridItem] { [
         GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10)),
         GridItem(.flexible(minimum: 200, maximum: geometry.size.width / 2 - 10))
@@ -45,7 +44,7 @@ struct ProjectsModal: View {
             }
             
             Group {
-                if let projects = projects, !projects.isEmpty {
+                if let projects = store.state.user?.projects, !projects.isEmpty {
                     ScrollView {
                         LazyVGrid(
                             columns: self.columns, spacing: 25,

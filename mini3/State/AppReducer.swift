@@ -18,6 +18,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     case .userRecordFetchedOrCreated(let user):
         newState.user = user
         
+
     case .iCloudAccountAvailable:
         newState.isCloudAccountAvailable = true
         
@@ -27,7 +28,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     // MARK: Profile
     case .expandProfileModal:
         newState.isProfileExpanded.toggle()
-    
+
     // MARK: Goals
     case .toggleGoalCompletion(let goalID):
         if let user = newState.user {
@@ -38,7 +39,13 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     
     // MARK: Navigation
     case .navigateToView(let viewState):
-        newState.viewState = viewState
+        switch viewState {
+        case .ideation(let project):
+            newState.currentProject = project
+            newState.viewState = viewState
+        default:
+            newState.viewState = viewState
+        }
         
     // MARK: CalendarModal
     case .increaseMonth:
@@ -51,8 +58,45 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         
     // MARK: Projects
     case .createNewProject:
-        newState.user?.projects.append(Project(id: state.user?.projects.count ?? 1))
+        if let user = newState.user {
+            user.projects.append(Project(id: user.projects.count + 1))
+        }
         
+    // MARK: First Stage
+    case .selectWord(let wordPosition):
+        guard let project = newState.currentProject else { break }
+        if project.selectedWords.contains(wordPosition) {
+            // Deselecionar a palavra
+            newState.currentProject?.selectedWords.removeAll { $0 == wordPosition }
+        } else {
+            // Selecionar a palavra
+            newState.currentProject?.selectedWords.append(wordPosition)
+        }
+        
+    case .showWord(let wordPosition):
+        state.currentProject?.appearingWords.append(wordPosition)
+        
+    case .hideWord(let wordPosition):
+        newState.currentProject?.appearingWords.removeAll { $0.id == wordPosition.id }
+        
+        
+    // MARK: Second Stage
+    case .selectConcept(let conceptPosition):
+        guard let project = newState.currentProject else { break }
+        if project.selectedConcepts.contains(conceptPosition) {
+            newState.currentProject?.selectedConcepts.removeAll { $0 == conceptPosition }
+        } else {
+            newState.currentProject?.appearingConcepts.append(conceptPosition)
+        }
+        
+    case .showConcept(let conceptPosition):
+        state.currentProject?.appearingConcepts.append(conceptPosition)
+        
+    case .hideConcept(let conceptPosition):
+        state.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
+        
+        
+
     default:
         break
     }
