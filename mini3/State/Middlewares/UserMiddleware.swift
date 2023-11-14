@@ -18,7 +18,8 @@ let userMiddleware: Middleware<AppState, AppAction> = { state, action in
                 cloudKitService.fetchAccountStatus { accountStatus in
                     switch accountStatus {
                     case .available:
-                        cloudKitService.fetchCurrentUser { result in
+                        let fullName = state.user?.fullName ?? "Default User"
+                        cloudKitService.fetchUser(fullName: fullName) { result in
                             switch result {
                             case .success(let user):
                                 promise(.success(.userRecordFetchedOrCreated(user)))
@@ -28,22 +29,6 @@ let userMiddleware: Middleware<AppState, AppAction> = { state, action in
                         }
                     default:
                         promise(.success(.iCloudStatusError))
-                    }
-                }
-            }
-        }
-        .eraseToAnyPublisher()
-
-        
-    case .fetchOrCreateUserRecord(let recordName):
-        return Deferred {
-            Future { promise in
-                cloudKitService.fetchOrCreateUser(withRecordName: recordName) { result in
-                    switch result {
-                    case .success(let user):
-                        promise(.success(.userRecordFetchedOrCreated(user)))
-                    case .failure(let error):
-                        promise(.success(.cloudKitError(error)))
                     }
                 }
             }

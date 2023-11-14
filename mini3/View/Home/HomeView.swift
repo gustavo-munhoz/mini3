@@ -15,9 +15,7 @@ struct HomeView: View {
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 40) {
-                ProjectsModal(
-                    geometry: geometry,
-                    projects: store.state.user?.projects)
+                ProjectsModal(geometry: geometry)
                 
                 VStack(spacing: 40) {
                     // ProfileModal(name: store.state.user?.fullName)

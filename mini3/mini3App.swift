@@ -12,12 +12,12 @@ struct mini3App: App {
     @StateObject var store = AppStore(
         initial: AppState(),
         reducer: appReducer,
-        middlewares: [userMiddleware]
+        middlewares: [userMiddleware, cloudKitMiddleware]
     )
     
     var body: some Scene {
         WindowGroup {
-            IdeationView(project: Project(id: 1))
+            ContentView()
                 .onAppear {
                     store.dispatch(.checkiCloudAccountStatus)
                 }

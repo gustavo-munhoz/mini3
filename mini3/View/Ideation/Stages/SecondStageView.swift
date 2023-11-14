@@ -194,4 +194,3 @@ struct SecondStageView: View {
         return ConceptPositionable(content: word, relativeX: 0.5, relativeY: 0.5)
     }
 }
-
