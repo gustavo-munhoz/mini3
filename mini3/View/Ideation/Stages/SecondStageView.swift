@@ -2,14 +2,15 @@ import SwiftUI
 import Combine
 
 struct SecondStageView: View {
+    @EnvironmentObject var store: AppStore
+    
     @State private var inputText: String = ""
-    @State private var concepts: [ConceptPositionable] = []
-    @State private var selectedWords: [ConceptPositionable] = []
     @State private var errorMessage: String?
     @State private var error : Bool = false
     @State var color : Color
     @Binding var circleSize: CGFloat
     private let chatGPTService = GPTService.shared
+    
     
     var body: some View {
         GeometryReader { geometry in
@@ -24,19 +25,22 @@ struct SecondStageView: View {
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
-                
-                ForEach(concepts.filter { !selectedWords.contains($0) }) { wordPosition in
+                // MARK: - Appearing Concepts
+                ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { wordPosition in
                     ConceptView(model: wordPosition,isSelected: false,onSelected: {
                         withAnimation(.easeIn(duration: 1)){
-                            handleWordSelection(concept: wordPosition)
+                            store.dispatch(.selectConcept(wordPosition))
                             fetchConcepts(with: wordPosition.content, geometry: geometry)
+                            
                         }
                     }, fontSize: calculateFontSize(screenSize: geometry.size))
                     .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            if !selectedWords.contains(wordPosition) {
+                            if !(store.state.currentProject?.selectedConcepts ?? []).contains(wordPosition) {
+                                withAnimation(.easeOut(duration: 1)) {
                                     wordPosition.isVisible = false
+                                }
                             }
                         }
                     }
@@ -44,29 +48,28 @@ struct SecondStageView: View {
                               y: wordPosition.relativeY * geometry.size.height)
                 }
                 
-                ForEach(selectedWords) { wordPosition in
+                // MARK: - Selected Concepts
+                ForEach((store.state.currentProject?.selectedConcepts ?? [])) { wordPosition in
                     ConceptView(
                         model: wordPosition,
                         isSelected: true,
                         onSelected: {
                             withAnimation(.easeOut(duration: 1)){
-                                handleWordSelection(concept: wordPosition)
+                                store.dispatch(.selectConcept(wordPosition))
                             }
                         }, fontSize: calculateFontSize(screenSize: geometry.size))
                     .position(x: wordPosition.relativeX * geometry.size.width,
                               y: wordPosition.relativeY * geometry.size.height)
                 }
                 
+                // MARK: - Input Concept
                 TextView(color: color, geometry: geometry, onSend: { text in
                     inputText = text
                     let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputText, fontSize: calculateFontSize(screenSize: geometry.size))
                     if !inputText.isEmpty {
-                        selectedWords.append(newWordPosition)
+                        store.dispatch(.selectConcept(newWordPosition))
                     }
                     fetchConcepts(with: inputText, geometry: geometry)
-                    for i in selectedWords {
-                        print(i.content)
-                    }
                     inputText = ""
                 }, placeholder: "Write your suggestions here...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
@@ -76,18 +79,25 @@ struct SecondStageView: View {
             Alert(title: Text("Erro"), message: Text(errorMessage ?? "Erro desconhecido"), dismissButton: .default(Text("OK")))
         })
     }
-    private func handleWordSelection(concept: ConceptPositionable) {
-        if let index = selectedWords.firstIndex(where: { $0 == concept }) {
-            selectedWords.remove(at: index)
-            concepts.removeAll { $0.id == concept.id
-            }
-        } else {
-            selectedWords.append(concept)
-        }
-    }
+    
+    
+//    private func handleWordSelection(concept: ConceptPosition) {
+//        if let index = selectedWords.firstIndex(where: { $0 == concept }) {
+//            selectedWords.remove(at: index)
+//            concepts.removeAll { $0.id == concept.id
+//            }
+//        } else {
+//            selectedWords.append(concept)
+//        }
+//    }
     private func fetchConcepts(with concept: String, geometry: GeometryProxy) {
-        let system = chatGPTService.createMessage(withRole: "system", content: "You are a system for recommending phrases related to what the user has provided. The user will pass on some words and a concept, and you will suggest 5 phrases related to those words and the concept passed on by the user. These phrases must be longer than one word, with a minimum of 3 words and a maximum of 8. The phrases must not be long. You must return exactly the sentences, without auxiliary texts or explanations. Don't deviate from the requested format. The format that must be returned is: { \"concepts\" : [ \"sentence\",\"sentence\", \"sentence\", \"sentence\", \"sentence\"]} This should be all that is returned, nothing other than the format requested. No additional text or explanations are required")
-//        let words = chatGPTService.createMessage(withRole: "User", content: "\()")
+        let system = chatGPTService.createMessage(withRole: "system", content: Secrets.PROMPT_1)
+        guard var wordPositions = store.state.currentProject?.selectedWords else { return }
+        
+        
+        let words = chatGPTService.createMessage(
+            withRole: "User",
+            content: "\(wordPositions.map { $0.content }.joined(separator: ","))")
         let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
         
         chatGPTService.chatGPT(messages: [system, message]) { result in
@@ -102,7 +112,7 @@ struct SecondStageView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
                                 let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
-                                self.concepts.append(conceptPosition)
+                                store.dispatch(.showConcept(conceptPosition))
                             }
                         }
                     }
@@ -159,7 +169,7 @@ struct SecondStageView: View {
         print(rect1.intersects(rect2))
         return rect1.intersects(rect2)
     }
-    func generateNonOverlappingPosition(screenSize: CGSize, word: String, fontSize: CGFloat) -> ConceptPositionable {
+    func generateNonOverlappingPosition(screenSize: CGSize, word: String, fontSize: CGFloat) -> ConceptPosition {
         let circleCenter = CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
         let circleRadius = circleSize / 2
         
@@ -173,7 +183,7 @@ struct SecondStageView: View {
                 var overlapFound = false
                 
                 // Verifique se o novo retângulo se sobrepõe a algum dos retângulos existentes
-                for existingWordPosition in concepts {
+                for existingWordPosition in (store.state.currentProject?.appearingConcepts ?? []) {
                     let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.content, with: fontSize)
                     if wordRect.intersects(existingRect) {
                         overlapFound = true
@@ -185,12 +195,12 @@ struct SecondStageView: View {
                 if !overlapFound {
                     let relativeX = randomPoint.x / screenSize.width
                     let relativeY = randomPoint.y / screenSize.height
-                    return ConceptPositionable(content: word, relativeX: relativeX, relativeY: relativeY)
+                    return ConceptPosition(content: word, relativeX: relativeX, relativeY: relativeY)
                 }
             }
         }
         
         // Se todas as tentativas falharem, retorne uma posição padrão (centro, por exemplo)
-        return ConceptPositionable(content: word, relativeX: 0.5, relativeY: 0.5)
+        return ConceptPosition(content: word, relativeX: 0.5, relativeY: 0.5)
     }
 }

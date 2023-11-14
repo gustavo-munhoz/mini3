@@ -13,6 +13,8 @@ class Project/*: Codable, Identifiable*/ {
     var currentStage: IdeationStage
     var appearingWords: [WordPosition] = []
     var selectedWords: [WordPosition]
+    var appearingConcepts: [ConceptPosition] = []
+    var selectedConcepts: [ConceptPosition] = []
     var specificThemes: [String]
     var referenceLinks: [String]
     var contentIdeas: [String]

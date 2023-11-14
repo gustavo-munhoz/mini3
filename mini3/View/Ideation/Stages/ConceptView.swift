@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ConceptView: View, ViewRepresentable {
-    typealias Model = ConceptPositionable
+    typealias Model = ConceptPosition
     @ObservedObject var model: Model
     var isSelected: Bool
     var onSelected: () -> Void
@@ -34,5 +34,5 @@ struct ConceptView: View, ViewRepresentable {
 }
 
 #Preview {
-    ConceptView(model: ConceptPositionable(content: "ola", relativeX: 0, relativeY: 0), isSelected: true, onSelected: {print()}, fontSize: 20)
+    ConceptView(model: ConceptPosition(content: "ola", relativeX: 0, relativeY: 0), isSelected: true, onSelected: {print()}, fontSize: 20)
 }

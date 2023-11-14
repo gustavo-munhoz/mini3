@@ -63,9 +63,9 @@ struct StageView<Content: Positionable, S: Service, TypeView: ViewRepresentable>
                 .position(position)
                 // ... outras configurações para WordPosition ...
 
-        case let conceptContent as ConceptPositionable:
+        case let conceptContent as ConceptPosition:
             ConceptView(model:
-                            ConceptPositionable(content: conceptContent.content, relativeX: conceptContent.relativeX, relativeY: conceptContent.relativeY),
+                            ConceptPosition(content: conceptContent.content, relativeX: conceptContent.relativeX, relativeY: conceptContent.relativeY),
                         isSelected: false,
                         onSelected: {
                 print("Concept")
