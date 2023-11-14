@@ -17,6 +17,9 @@ enum AppAction {
     case iCloudAccountAvailable
     case iCloudStatusError
     
+    // MARK: Profile
+    case expandProfileModal
+    
     // MARK: Goals
     case toggleGoalCompletion(Int)
     

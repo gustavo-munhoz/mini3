@@ -8,40 +8,44 @@
 import SwiftUI
 
 struct MonthNavigator: View {
+    @EnvironmentObject var store: AppStore
     @Binding var currentMonth: Int
     private let dateFormatter = DateFormatter()
 
     var body: some View {
         HStack {
+            
+            Spacer()
+            
             Button(action: previousMonth) {
                 Image(systemName: "chevron.backward.circle")
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appBlack)
+                    .font(.system(size: 15))
             }
-            .clipShape(Circle())
+            .buttonStyle(.plain)
             
             Spacer()
             
             Text(monthName.uppercased())
-                .foregroundStyle(.white)
+                .foregroundStyle(Color("AppBlack"))
                 .font(.system(size: 15))
             
             Spacer()
             
             Button(action: nextMonth) {
                 Image(systemName: "chevron.forward.circle")
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.appBlack)
+                    .font(.system(size: 15))
             }
-            .clipShape(Circle())
+            .buttonStyle(.plain)
+            
+            Spacer()
         }
         .padding(8)
         .frame(maxWidth: .infinity)
         .aspectRatio(13.2, contentMode: .fit)
-        .background(.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white, lineWidth: 1)
-        }
+        .background(store.state.uiColor)
+        .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 
     private var monthName: String {

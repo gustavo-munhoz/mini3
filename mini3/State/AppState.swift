@@ -13,6 +13,7 @@ struct AppState {
     var isCloudAccountAvailable = false
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
+    var isProfileExpanded: Bool = false
     
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {

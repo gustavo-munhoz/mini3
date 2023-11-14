@@ -24,6 +24,10 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     case .iCloudStatusError:
         newState.isCloudAccountAvailable = false
         
+    // MARK: Profile
+    case .expandProfileModal:
+        newState.isProfileExpanded.toggle()
+    
     // MARK: Goals
     case .toggleGoalCompletion(let goalID):
         if let user = newState.user {

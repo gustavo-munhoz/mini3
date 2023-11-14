@@ -15,20 +15,21 @@ struct GoalsModalCell: View {
     var body: some View {
         HStack(spacing: 25) {
             Image(systemName: goal.isCompleted ? "checkmark.circle.fill" : "circle")
-                .font(.system(size: 31))
+                .font(.system(size: 40))
             
             Text(goal.content)
                 .font(.system(size: 16))
+                .fontWeight(.medium)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(20)
-        .foregroundStyle(.white)
+        .foregroundStyle(store.state.uiColor)
         .aspectRatio(5.65, contentMode: .fill)
         .background(goal.isCompleted ? .white : .gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 4))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(store.state.uiColor, lineWidth: 1)
         }
         .onTapGesture {
             withAnimation {
