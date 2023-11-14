@@ -19,7 +19,7 @@ struct FirstStageView: View {
                     .foregroundColor(.appBlack)
                     .overlay {
                         Circle()
-                            .stroke(color, lineWidth: 5)
+                            .stroke(color, lineWidth: geometry.size.width * 0.002)
                     }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
@@ -63,6 +63,7 @@ struct FirstStageView: View {
                 }
                 
                 // MARK: - Input words
+
                 TextView(color: .appPink, geometry: geometry, onSend: { text in
                     inputWord = text.capitalizedFirst()
                     let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
@@ -143,7 +144,6 @@ struct FirstStageView: View {
             }
         }
     }
-
     
     private func calculateFontSize(screenSize: CGSize) -> CGFloat {
         let baseFontSize: CGFloat = 8 // Tamanho base para a fonte

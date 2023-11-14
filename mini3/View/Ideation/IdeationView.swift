@@ -13,16 +13,29 @@ struct IdeationView: View {
     var body: some View {
         GeometryReader{ geometry in
             let circleSize = geometry.size.width * 0.9
+            let stages = [
+                IdentifiableView(FirstStageView(color: .appPink, circleSize: .constant(circleSize))),
+                IdentifiableView(SecondStageView(color: .appPurple, circleSize: .constant(circleSize)))
+            ]
             
-            ZStack {
-                ForEach((0..<4), id: \.self) { index in
-                    FirstStageView(color: index.isMultiple(of: 2) ? .gray : .cyan, circleSize: .constant(circleSize))
+            ZStack{
+                ForEach((0..<2), id: \.self) { index in
+                    stages[index].view
                         .scaleEffect(currentIndex == index ? 0.8 : 1.3)
                         .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
                         .disabled(currentIndex != index)
-                
                     
+//                    SecondStageView(color: index.isMultiple(of: 2) ? .gray : .cyan, circleSize: .constant(circleSize))
+//                        .scaleEffect(currentIndex == index ? 0.8 : 1.3)
+//                        .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
+//                        .disabled(currentIndex != index)
                 }
+//                ForEach(stages) { stage in
+//                    stage.view
+//                        .scaleEffect(currentIndex == stages.firstIndex(where: { $0.id == stage.id }) ? 0.8 : 1.3)
+//                        .offset(x: offset(index: stages.firstIndex(where: { $0.id == stage.id }) ?? 0, geometry: geometry, circleSize: circleSize), y: 0)
+//                        .disabled(currentIndex != stages.firstIndex(where: { $0.id == stage.id }))
+//                }
                 
                 //Buttons
                 HStack {
@@ -65,31 +78,12 @@ struct IdeationView: View {
     }
 }
 
-// View for tests
-struct CircleView: View {
-    var color: Color
-    @Binding var circleSize: CGFloat // Inicializa com um valor padrão
-    @State var index : Int
-    
-    var body: some View {
-        ZStack {
-            Ellipse()
-//            Circle()
-                .foregroundColor(color)
-                .frame(width: circleSize, height: circleSize * 1.2)
+struct IdentifiableView: Identifiable {
+    let id = UUID()
+    let view: AnyView
 
-            VStack{
-                Text("Etapa \(index + 1)") // Mostra o tamanho do círculo
-                Text("Tamanho \(circleSize)")
-            }
-        }
-    }
-}
-
-#Preview {
-    GeometryReader{ geometry in
-        let circleSize = geometry.size.width * 0.9
-        CircleView(color: Color.blue, circleSize: .constant(circleSize), index: 1)
+    init<Content: View>(_ view: Content) {
+        self.view = AnyView(view)
     }
 }
 
