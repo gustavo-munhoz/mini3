@@ -27,7 +27,6 @@ struct TextView: View {
 
                 
                 Button(action: {
-                    // Chamada do completion handler quando o botão é pressionado
                     onSend(suggestionText)
                 }) {
                     Image(systemName: "arrow.right.circle.fill")
@@ -63,7 +62,6 @@ struct TextView: View {
         return adjustedFontSize
     }
 }
-
 
 #Preview {
     GeometryReader{ geometry in

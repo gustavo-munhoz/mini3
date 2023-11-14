@@ -1,7 +1,6 @@
 import Foundation
 
 struct OpenAIResponse: Codable {
-    let id: String
     let object: String
     let created: Int
     let model: String
@@ -12,7 +11,7 @@ struct Choice: Codable {
     let message: Message
     let index: Int
     let logprobs: LogProbs?
-    let finishReason: String
+    let finish_reason: String
 }
 
 struct Message: Codable {
