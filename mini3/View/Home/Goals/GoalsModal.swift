@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct GoalsModal: View {
+    @EnvironmentObject var store: AppStore
     var geometry: GeometryProxy
     @State var goals: [Goal]?
     @State private var currentMonth = Calendar.current.component(.month, from: Date())
@@ -15,24 +16,35 @@ struct GoalsModal: View {
     var body: some View {
         VStack {
             HStack {
-                Text("Goals")
+                Text("Motivation")
                     .font(.system(size: 39))
-                    .foregroundStyle(.white)
+                    .fontWeight(.heavy)
+                    .fontWidth(.expanded)
+                    .foregroundColor(store.state.uiColor)
                 
                 Spacer()
                 
                 Button(action: {}) {
-                    Text("VIEW ALL")
-                        .frame(width: 134, height: 36)
-                        .foregroundStyle(.white)
-                        .font(.system(size: 15))
+                    Image(systemName: "plus")
+                        .font(.system(size: 16))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.appBlack)
+                        .frame(width: 46, height: 36)
+                        .background(store.state.uiColor)
                 }
-                .background(.gray.opacity(0.2))
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(.white, lineWidth: 1)
+                .buttonStyle(.plain)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+                
+                Button(action: {}) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 14))
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.appBlack)
+                        .frame(width: 46, height: 36)
+                        .background(store.state.uiColor)
                 }
+                .buttonStyle(.plain)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
             }
             
             MonthNavigator(currentMonth: $currentMonth)
@@ -59,11 +71,10 @@ struct GoalsModal: View {
         .padding(40)
         .frame(maxWidth: geometry.size.width * 0.35 - 80)
         .aspectRatio(1.36, contentMode: .fill)
-        .background(.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .clipShape(RoundedRectangle(cornerRadius: 4))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(store.state.uiColor, lineWidth: 1)
         }
     }
 }

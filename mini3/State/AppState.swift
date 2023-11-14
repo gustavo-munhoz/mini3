@@ -12,6 +12,7 @@ struct AppState {
     var user: User? = nil
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
+    var isProfileExpanded: Bool = false
     
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {

@@ -33,11 +33,14 @@ struct CalendarModal: View {
         VStack {
             HStack {
                 Text("\(store.state.calendar.monthSymbols[store.state.calendar.component(.month, from: store.state.currentDate) - 1]) \(store.state.calendar.component(.year, from: store.state.currentDate).description)")
-                    .font(.system(size: 39))
+                    .textCase(.uppercase)
+                    .font(.system(size: 22))
+                    .fontWeight(.heavy)
                     .fontWidth(.expanded)
                     .foregroundColor(store.state.uiColor)
 
                 Spacer()
+                
                 Button(action: {
                     store.dispatch(.decreaseMonth)
                 }) {
@@ -46,6 +49,8 @@ struct CalendarModal: View {
                         .foregroundColor(store.state.uiColor)
                         .font(.system(size: 24))
                 }
+                .buttonStyle(.plain)
+                
                 Button(action: {
                     store.dispatch(.increaseMonth)
                 }) {
@@ -54,6 +59,7 @@ struct CalendarModal: View {
                         .foregroundColor(store.state.uiColor)
                         .font(.system(size: 24))
                 }
+                .buttonStyle(.plain)
             }
             .padding()
             
@@ -78,7 +84,7 @@ struct CalendarModal: View {
                             }
                         }
                         .frame(width: 40, height: 40)
-                        .padding(.horizontal, 32)
+                        .padding(.horizontal, 10)
                     }
                 }
             }

@@ -21,8 +21,9 @@ struct ProjectsModal: View {
             HStack {
                 Text("Projects")
                     .font(.system(size: 39))
-                    .foregroundStyle(.white)
-                
+                    .fontWeight(.heavy)
+                    .fontWidth(.expanded)
+                    .foregroundColor(store.state.uiColor)
                 
                 Spacer()
                 
@@ -32,7 +33,8 @@ struct ProjectsModal: View {
                     }
                 }) {
                     Image(systemName: "plus")
-                        .font(.system(size: 20))
+                        .font(.system(size: 16))
+                        .fontWeight(.medium)
                         .foregroundStyle(Color.appBlack)
                         .frame(width: 46, height: 36)
                         .background(store.state.uiColor)
@@ -64,13 +66,9 @@ struct ProjectsModal: View {
             }
         }
         .padding(40)
-        .frame(maxWidth: geometry.size.width * 0.65 - 80, maxHeight: geometry.size.height - 80)
-        .aspectRatio(1, contentMode: .fill)
-        .background(.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(store.state.uiColor, lineWidth: 1)
         }
     }
 }
