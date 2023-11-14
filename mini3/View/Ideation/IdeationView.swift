@@ -14,7 +14,7 @@ struct IdeationView: View {
         GeometryReader{ geometry in
             let circleSize = geometry.size.width * 0.9
             
-            ZStack{
+            ZStack {
                 ForEach((0..<4), id: \.self) { index in
                     FirstStageView(color: index.isMultiple(of: 2) ? .gray : .cyan, circleSize: .constant(circleSize))
                         .scaleEffect(currentIndex == index ? 0.8 : 1.3)
@@ -26,16 +26,16 @@ struct IdeationView: View {
                 
                 //Buttons
                 HStack {
-                    Button(action: {
-                        withAnimation {
-                            currentIndex = max(0, currentIndex - 1)
-                        }
-                    }) {
-                        Image(systemName: "arrow.left")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .padding()
-                    }
+//                    Button(action: {
+//                        withAnimation {
+//                            currentIndex = max(0, currentIndex - 1)
+//                        }
+//                    }) {
+//                        Image(systemName: "arrow.left")
+//                            .resizable()
+//                            .frame(width: 40, height: 40)
+//                            .padding()
+//                    }
                     
                     Spacer()
                         .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)

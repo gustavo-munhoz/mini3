@@ -37,13 +37,13 @@ struct StageView<Content: Positionable, S: Service, TypeView: ViewRepresentable>
                         .position(x: content.relativeX * geometry.size.width, y: content.relativeY * geometry.size.height)
                     
                 }
-                TextView(color: color, geometry: geometry, onSend: { text in
-                    onSend(text)
-                    
-                    for i in selectedViews {
-                        print(i.content)
-                    }
-                })
+//                TextView(color: color, geometry: geometry, onSend: { text in
+//                    onSend(text)
+//                    
+//                    for i in selectedViews {
+//                        print(i.content)
+//                    }
+//                })
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
         }
