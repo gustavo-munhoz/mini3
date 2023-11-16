@@ -15,10 +15,24 @@ struct HomeView: View {
     var body: some View {
         GeometryReader { geometry in
             HStack(spacing: 40) {
-                ProjectsModal(geometry: geometry)
+                ZStack {
+                    VStack(alignment: .leading) {
+                        HStack(alignment: .top) {
+                            ProfileModal()
+                            Spacer()
+                        }
+                        Spacer()
+                    }.zIndex(100)
+                    
+                    VStack (alignment: .leading, spacing: 40) {
+                        Spacer()
+                            .frame(width: 185, height: 118)
+                        
+                        ProjectsModal(geometry: geometry)
+                    }
+                }
                 
                 VStack(spacing: 40) {
-                    // ProfileModal(name: store.state.user?.fullName)
                     
                     GoalsModal(
                         geometry: geometry,

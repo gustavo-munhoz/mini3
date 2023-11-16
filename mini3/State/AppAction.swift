@@ -16,6 +16,9 @@ enum AppAction {
     case iCloudStatusError
     case requestUserRecord(fullName: String)
     
+    // MARK: Profile
+    case expandProfileModal
+    
     // MARK: Goals
     case toggleGoalCompletion(Int)
     

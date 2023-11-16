@@ -15,23 +15,21 @@ struct ProjectModalCell: View {
     var body: some View {
         VStack {
             Rectangle()
-                .fill(.gray)
+                .fill(Color.appBlack)
                 .frame(minWidth: 126, minHeight: 62.5)
             
             Text(project.name)
-                .foregroundStyle(.white)
-                .font(.system(size: 12))
+                .foregroundStyle(Color.appBlack)
+                .font(.system(size: 20))
+                .fontWeight(.semibold)
+                .textCase(.uppercase)
                 .frame(minWidth: 126, maxWidth: .infinity, minHeight: 12.5, alignment: .leading)
             
         }
         .aspectRatio(1.63, contentMode: .fill)
         .padding(25)
-        .background(.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white, lineWidth: 1)
-        }
+        .background(store.state.uiColor)
+        .clipShape(RoundedRectangle(cornerRadius: 4))
         .onTapGesture {
             store.dispatch(.navigateToView(.ideation(project)))
         }
