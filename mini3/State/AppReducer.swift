@@ -75,7 +75,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         if project.selectedConcepts.contains(conceptPosition) {
             newState.currentProject?.selectedConcepts.removeAll { $0 == conceptPosition }
         } else {
-            newState.currentProject?.appearingConcepts.append(conceptPosition)
+            newState.currentProject?.selectedConcepts.append(conceptPosition)
         }
         
     case .showConcept(let conceptPosition):
@@ -85,6 +85,20 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         state.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
         
         
+    // MARK: Third Stage
+    case .selectVideo(let videoPosition):
+        guard let project = newState.currentProject else { break }
+        if project.selectedVideos.contains(videoPosition) {
+            newState.currentProject?.selectedVideos.removeAll { $0 == videoPosition }
+        } else {
+            newState.currentProject?.selectedVideos.append(videoPosition)
+        }
+        
+    case .showVideo(let videoPosition):
+        state.currentProject?.appearingVideos.append(videoPosition)
+        
+    case .hideVideo(let videoPosition):
+        state.currentProject?.appearingVideos.removeAll { $0.id == videoPosition.id }
 
     default:
         break

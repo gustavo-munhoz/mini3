@@ -11,10 +11,16 @@ class Project/*: Codable, Identifiable*/ {
     var id: Int
     var name: String
     var currentStage: IdeationStage
+    
     var appearingWords: [WordPosition] = []
-    var selectedWords: [WordPosition]
+    var selectedWords: [WordPosition] = []
+    
     var appearingConcepts: [ConceptPosition] = []
     var selectedConcepts: [ConceptPosition] = []
+    
+    var appearingVideos: [VideoPosition] = []
+    var selectedVideos: [VideoPosition] = []
+    
     var specificThemes: [String]
     var referenceLinks: [String]
     var contentIdeas: [String]

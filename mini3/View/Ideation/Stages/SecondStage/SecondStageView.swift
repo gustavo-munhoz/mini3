@@ -16,7 +16,7 @@ struct SecondStageView: View {
         GeometryReader { geometry in
             ZStack{
                 Ellipse()
-                    .foregroundColor(.black)
+                    .foregroundColor(.appBlack)
                     .overlay {
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width * 0.002)
@@ -79,33 +79,23 @@ struct SecondStageView: View {
             Alert(title: Text("Erro"), message: Text(errorMessage ?? "Erro desconhecido"), dismissButton: .default(Text("OK")))
         })
     }
-    
-    
-//    private func handleWordSelection(concept: ConceptPosition) {
-//        if let index = selectedWords.firstIndex(where: { $0 == concept }) {
-//            selectedWords.remove(at: index)
-//            concepts.removeAll { $0.id == concept.id
-//            }
-//        } else {
-//            selectedWords.append(concept)
-//        }
-//    }
     private func fetchConcepts(with concept: String, geometry: GeometryProxy) {
         let system = chatGPTService.createMessage(withRole: "system", content: Secrets.PROMPT_1)
-        guard var wordPositions = store.state.currentProject?.selectedWords else { return }
-        
-        
+        guard let wordPositions = store.state.currentProject?.selectedWords else { return }
         let words = chatGPTService.createMessage(
-            withRole: "User",
-            content: "\(wordPositions.map { $0.content }.joined(separator: ","))")
+            withRole: "user",
+            content: "Words to use: \(wordPositions.map { $0.content }.joined(separator: ","))")
         let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
         
-        chatGPTService.chatGPT(messages: [system, message]) { result in
+        chatGPTService.chatGPT(messages: [system, words, message]) { result in
+            print(result)
             switch result {
             case .success(let result):
                 let gptConcepts = chatGPTService.extractConcepts(from: result)
+                print(gptConcepts)
                 switch gptConcepts {
                 case .success(let jsonConcepts):
+                    
                     var delay = 0.0
                     for concept in jsonConcepts {
                         delay += 1
@@ -195,12 +185,12 @@ struct SecondStageView: View {
                 if !overlapFound {
                     let relativeX = randomPoint.x / screenSize.width
                     let relativeY = randomPoint.y / screenSize.height
-                    return ConceptPosition(content: word, relativeX: relativeX, relativeY: relativeY)
+                    return ConceptPosition(word: word, relativeX: relativeX, relativeY: relativeY)
                 }
             }
         }
         
         // Se todas as tentativas falharem, retorne uma posição padrão (centro, por exemplo)
-        return ConceptPosition(content: word, relativeX: 0.5, relativeY: 0.5)
+        return ConceptPosition(word: word, relativeX: 0.5, relativeY: 0.5)
     }
 }

@@ -40,9 +40,9 @@ final class GPTService: Service {
         // Fazendo a requisição
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             
-//            if let data = data, let rawResponse = String(data: data, encoding: .utf8) {
-//                print(rawResponse)
-//            }
+            if let data = data, let rawResponse = String(data: data, encoding: .utf8) {
+                print(rawResponse)
+            }
             
             guard let data = data, error == nil else {
                 completion(.failure(error!))

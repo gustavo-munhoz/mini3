@@ -40,5 +40,10 @@ enum AppAction {
     case selectConcept(ConceptPosition)
     case showConcept(ConceptPosition)
     case hideConcept(ConceptPosition)
+    
+    // MARK: ThirdStage
+    case selectVideo(VideoPosition)
+    case showVideo(VideoPosition)
+    case hideVideo(VideoPosition)
 }
 

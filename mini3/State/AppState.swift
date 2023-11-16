@@ -12,7 +12,7 @@ struct AppState {
     var user: User? = nil
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
-    
+    var inputTextEnable : Bool = true
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {
             return Color.from(name: preferredColor)
