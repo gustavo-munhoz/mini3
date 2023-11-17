@@ -99,9 +99,7 @@ struct ProjectModalCell: View {
                                     .foregroundStyle(store.state.uiColor)
                                 
                                 Button {
-                                    withAnimation {
-                                        store.dispatch(.deleteProject(project))
-                                    }
+                                    store.dispatch(.deleteProject(project))
                                     showContextMenu = false
                                 } label: {
                                     HStack {
@@ -127,10 +125,13 @@ struct ProjectModalCell: View {
                             .buttonStyle(.plain)
                         }
                     }
+                    .imageScale(.large)
+                    .frame(width: 50, height: 35)
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         self.showContextMenu = true
                     }
-                    .imageScale(.large)
+                    .symbolEffect(.bounce, options: .speed(2), value: showContextMenu)
             }
             .padding(.top, 12)
             .foregroundStyle(Color.appBlack)
@@ -141,5 +142,10 @@ struct ProjectModalCell: View {
         .padding(25)
         .background(store.state.uiColor)
         .clipShape(RoundedRectangle(cornerRadius: 4))
+        .onAppear {
+            isEditing = true
+            isTextFieldFocused = true
+            editableContent = "New Project"
+        }
     }
 }
