@@ -34,3 +34,44 @@ struct EdgeBorder: Shape {
         }.reduce(into: Path()) { $0.addPath($1) }
     }
 }
+
+//extension View {
+//    func onForceClick(minimumPressure: CGFloat, perform action: @escaping () -> Void) -> some View {
+//        self.background(ForceClickGestureView(minimumPressure: minimumPressure, action: action))
+//    }
+//}
+//
+//struct ForceClickGestureView: NSViewRepresentable {
+//    var minimumPressure: CGFloat
+//    var action: () -> Void
+//
+//    func makeNSView(context: Context) -> NSView {
+//        let view = NSView()
+//        let recognizer = NSPressGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.forceClickRecognized))
+//        recognizer.minimumPressDuration = 0
+//        recognizer.allowableMovement = 10
+//        recognizer.pressure = minimumPressure
+//        view.addGestureRecognizer(recognizer)
+//        return view
+//    }
+//
+//    func updateNSView(_ nsView: NSView, context: Context) {}
+//
+//    func makeCoordinator() -> Coordinator {
+//        Coordinator(action: action)
+//    }
+//
+//    class Coordinator: NSObject {
+//        var action: () -> Void
+//
+//        init(action: @escaping () -> Void) {
+//            self.action = action
+//        }
+//
+//        @objc func forceClickRecognized(recognizer: NSPressGestureRecognizer) {
+//            if recognizer.state == .recognized {
+//                action()
+//            }
+//        }
+//    }
+//}

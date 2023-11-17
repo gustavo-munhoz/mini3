@@ -13,6 +13,7 @@ struct AppState {
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
     var isProfileExpanded: Bool = false
+    var onboardingState: OnboardingState = .started
     
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {

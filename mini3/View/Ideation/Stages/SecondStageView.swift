@@ -11,63 +11,60 @@ struct SecondStageView: View {
     @Binding var circleSize: CGFloat
     private let chatGPTService = GPTService.shared
     
-    
     var body: some View {
         GeometryReader { geometry in
             ZStack{
                 Ellipse()
-                    .foregroundColor(.black)
+                    .foregroundColor(.appBlack)
                     .overlay {
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width * 0.002)
-                            
                     }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
                 // MARK: - Appearing Concepts
-                ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { wordPosition in
-                    ConceptView(model: wordPosition,isSelected: false,onSelected: {
+                ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { conceptPosition in
+                    ConceptView(model: conceptPosition, isSelected: false, onSelected: {
                         withAnimation(.easeIn(duration: 1)){
-                            store.dispatch(.selectConcept(wordPosition))
-                            fetchConcepts(with: wordPosition.content, geometry: geometry)
-                            
+                            store.dispatch(.selectConcept(conceptPosition))
+                            fetchConcepts(with: conceptPosition.content, geometry: geometry)
                         }
                     }, fontSize: calculateFontSize(screenSize: geometry.size))
-                    .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
+                    .animation(.easeInOut(duration: 1), value: conceptPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            if !(store.state.currentProject?.selectedConcepts ?? []).contains(wordPosition) {
+                            if !(store.state.currentProject?.selectedConcepts ?? []).contains(conceptPosition) {
                                 withAnimation(.easeOut(duration: 1)) {
-                                    wordPosition.isVisible = false
+                                    conceptPosition.isVisible = false
                                 }
                             }
                         }
                     }
-                    .position(x: wordPosition.relativeX * geometry.size.width,
-                              y: wordPosition.relativeY * geometry.size.height)
+                    .position(x: conceptPosition.relativeX * geometry.size.width,
+                              y: conceptPosition.relativeY * geometry.size.height)
                 }
                 
                 // MARK: - Selected Concepts
-                ForEach((store.state.currentProject?.selectedConcepts ?? [])) { wordPosition in
+                ForEach((store.state.currentProject?.selectedConcepts ?? [])) { conceptPosition in
                     ConceptView(
-                        model: wordPosition,
+                        model: conceptPosition,
                         isSelected: true,
                         onSelected: {
                             withAnimation(.easeOut(duration: 1)){
-                                store.dispatch(.selectConcept(wordPosition))
+                                store.dispatch(.selectConcept(conceptPosition))
                             }
                         }, fontSize: calculateFontSize(screenSize: geometry.size))
-                    .position(x: wordPosition.relativeX * geometry.size.width,
-                              y: wordPosition.relativeY * geometry.size.height)
+                    .position(x: conceptPosition.relativeX * geometry.size.width,
+                              y: conceptPosition.relativeY * geometry.size.height)
                 }
                 
                 // MARK: - Input Concept
                 TextView(color: color, geometry: geometry, onSend: { text in
                     inputText = text
-                    let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputText, fontSize: calculateFontSize(screenSize: geometry.size))
+                    let newConceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputText, fontSize: calculateFontSize(screenSize: geometry.size))
                     if !inputText.isEmpty {
-                        store.dispatch(.selectConcept(newWordPosition))
+                        store.dispatch(.selectConcept(newConceptPosition))
                     }
                     fetchConcepts(with: inputText, geometry: geometry)
                     inputText = ""
@@ -80,16 +77,6 @@ struct SecondStageView: View {
         })
     }
     
-    
-//    private func handleWordSelection(concept: ConceptPosition) {
-//        if let index = selectedWords.firstIndex(where: { $0 == concept }) {
-//            selectedWords.remove(at: index)
-//            concepts.removeAll { $0.id == concept.id
-//            }
-//        } else {
-//            selectedWords.append(concept)
-//        }
-//    }
     private func fetchConcepts(with concept: String, geometry: GeometryProxy) {
         let system = chatGPTService.createMessage(withRole: "system", content: Secrets.PROMPT_1)
         guard var wordPositions = store.state.currentProject?.selectedWords else { return }

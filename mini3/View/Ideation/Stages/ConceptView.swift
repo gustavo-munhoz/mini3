@@ -16,23 +16,19 @@ struct ConceptView: View, ViewRepresentable {
 
     var body: some View {
         Text(model.content)
-            .font(.system(size: fontSize * 0.5))
-            .foregroundColor(isSelected ? .white : .appPurple) // Cor do texto alterna com base no estado isSelected
-            .padding() // Adicionar um pouco de espaço ao redor do texto
-            .background(isSelected ? Color.appPurple : .clear) // Cor de fundo alterna com base no estado isSelected
+            .font(.system(size: fontSize * 0.8, weight: .semibold))
+            .foregroundStyle(isSelected ? Color.appBlack : Color.appPurple)
+            .padding()
+            .background(isSelected ? Color.appPurple : .appBlack)
             .overlay(
-                RoundedRectangle(cornerRadius: 10) // Forma do contorno arredondado
-                    .stroke(isSelected ? Color.clear : Color.appPurple, lineWidth: 2) // A cor do contorno alterna com base no estado isSelected
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.appPurple, lineWidth: 1)
             )
             .opacity(model.isVisible ? 1 : 0)
             .animation(.easeInOut(duration: 1), value: model.isVisible)
             .onTapGesture {
                 onSelected()
             }
-            .frame(maxWidth: 400)
+            .frame(maxWidth: 500)
     }
-}
-
-#Preview {
-    ConceptView(model: ConceptPosition(content: "ola", relativeX: 0, relativeY: 0), isSelected: true, onSelected: {print()}, fontSize: 20)
 }
