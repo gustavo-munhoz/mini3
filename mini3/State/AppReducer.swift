@@ -67,6 +67,10 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
                 user.goals[index].isCompleted.toggle()
             }
         }
+        
+    case .deleteGoal(let goal):
+        guard let user = newState.user else { break }
+        user.goals.removeAll(where: { $0.id == goal.id })
     
     // MARK: - Navigation
         

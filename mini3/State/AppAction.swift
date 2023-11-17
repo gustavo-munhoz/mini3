@@ -31,6 +31,7 @@ enum AppAction {
     case createNewGoal
     case updateGoalContent(Goal, String)
     case toggleGoalCompletion(Int)
+    case deleteGoal(Goal)
     
     // MARK: Navigation
     case navigateToView(ViewState)

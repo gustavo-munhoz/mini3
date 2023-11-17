@@ -36,17 +36,6 @@ struct GoalsModal: View {
                     }
                     .buttonStyle(.plain)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-                    
-                    Button(action: {}) {
-                        Image(systemName: "trash")
-                            .font(.system(size: 14))
-                            .fontWeight(.medium)
-                            .foregroundStyle(Color.appBlack)
-                            .frame(width: 46, height: 36)
-                            .background(store.state.uiColor)
-                    }
-                    .buttonStyle(.plain)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
                 }
                 
                 MonthNavigator()
