@@ -13,6 +13,10 @@ struct AppState {
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
     var isHiddenText : Bool = false
+    var inputTextEnable : Bool = true
+    var isProfileExpanded: Bool = false
+    var onboardingState: OnboardingState = .started
+    
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {
             return Color.from(name: preferredColor)

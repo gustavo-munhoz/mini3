@@ -8,52 +8,125 @@
 import SwiftUI
 
 struct ProfileModal: View {
-    @State var name: String?
+    @EnvironmentObject var store: AppStore
+    @State var geometry: GeometryProxy
+    
+    private var offsetSize: CGSize {
+        CGSize(
+            width: store.state.isProfileExpanded ? geometry.size.width * 0.13 : geometry.size.width * 0.16,
+            height: store.state.isProfileExpanded ? geometry.size.height * 0.001 : 0.02
+        )
+    }
+    
+    let themeColors: [Color] = [.appBlue, .appPurple, .appPink, .appOrange, .appYellow]
     
     var body: some View {
-        HStack(spacing: 28) {
-            Spacer()
-            
-            VStack(spacing: 4) {
+        ZStack {
+            VStack(alignment: .leading, spacing: 32) {
                 HStack {
-                    Spacer()
+                    Image("Profile")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: geometry.size.width * 0.05)
+                        .clipShape(Circle())
+                        .overlay {
+                            Circle()
+                                .stroke(store.state.uiColor, lineWidth: 1)
+                        }
                     
-                    Button(action: {}, label: {
-                        Text("􀆑")
-                            .frame(width: 40, height: 31)
+                    Button(action: {
+                        withAnimation {
+                            store.dispatch(.expandProfileModal)
+                        }
+                    }, label: {
+                        Image(systemName: store.state.isProfileExpanded  ? "chevron.up" : "chevron.down")
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
                             .font(.system(size: 18))
                             .foregroundStyle(.black)
+                            .contentShape(RoundedRectangle(cornerRadius: 4))
+                            .contentTransition(.symbolEffect(.replace))
                     })
-                    .background(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(.black, lineWidth: 1)
-                    }
+                    .background(store.state.uiColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .buttonStyle(.plain)
                     .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 2)
+                    
                 }
                 
-                Text(name ?? " - ")
-                    .foregroundStyle(.black)
-                    .font(.system(size: 29))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                VStack {
+                    if store.state.isProfileExpanded {
+                        HStack {
+                            Image(systemName: "circle.lefthalf.filled")
+                                .symbolEffect(.bounce, options: .speed(2), value: store.state.uiColor)
+                            Text("Theme Color")
+                        }
+                        .foregroundStyle(store.state.uiColor)
+                        .font(.system(size: 20))
+                        .fontWeight(.semibold)
+                        .fontWidth(.expanded)
+                        
+                        HStack {
+                            ForEach(themeColors, id: \.self) { themeColor in
+                                ColorSelectionButton(
+                                    color: themeColor,
+                                    isSelected: store.state.uiColor == themeColor,
+                                    action: {
+                                        store.dispatch(.setUIColor(themeColor))
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.bottom, 45)
+                        .padding(.leading, 13)
+                    }
+                }
             }
+            .padding(.top, 30)
+            .padding([.trailing], 20)
+            .frame(maxWidth: store.state.isProfileExpanded ? 300 : 185,
+                   maxHeight: store.state.isProfileExpanded ? 250 : 118
+            )
+            .aspectRatio(contentMode: .fill)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay {
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(store.state.uiColor, lineWidth: 1)
+            }
+            .background(Color.appBlack)
+            .opacity((store.state.onboardingState != .profile && store.state.onboardingState != .finished) ? 0.3 : 1)
+            .offset(y: -70)
             
-            Circle()
-                .frame(width: 105)
-                .foregroundStyle(.black)
+            if store.state.onboardingState == .profile {
+                ProfileOnboardingOverlayView()
+                    .offset(x: offsetSize.width * 1.2, y: -offsetSize.height)
+            }
         }
-        .padding(25)
-        .frame(width: 595, height: 156)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.black, lineWidth: 1)
-        }
+        .offset(x: store.state.onboardingState == .profile ? -offsetSize.width : 0, y: offsetSize.height)
+        .padding([.top], 70)
     }
 }
 
-#Preview {
-    ProfileModal()
+struct ColorSelectionButton: View {
+    let color: Color
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action, label: {
+            ZStack {
+                Circle()
+                    .frame(width: 30, height: 30)
+                    .foregroundStyle(color)
+                
+                Image(systemName: "checkmark")
+                    .font(.system(size: 16))
+                    .fontWeight(.semibold)
+                    .opacity(isSelected ? 1 : 0)
+                    .symbolEffect(.bounce, value: isSelected)
+            }
+        })
+        .frame(width: 44, height: 44)
+        .buttonStyle(.plain)
+    }
 }

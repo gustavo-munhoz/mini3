@@ -8,56 +8,43 @@
 import SwiftUI
 
 struct MonthNavigator: View {
-    @Binding var currentMonth: Int
+    @EnvironmentObject var store: AppStore
     private let dateFormatter = DateFormatter()
 
     var body: some View {
         HStack {
-            Button(action: previousMonth) {
+            
+            Spacer()
+            
+            Button(action: {store.dispatch(.decreaseMonth)}) {
                 Image(systemName: "chevron.backward.circle")
-                    .foregroundStyle(.white)
             }
-            .clipShape(Circle())
+            .buttonStyle(.plain)
             
             Spacer()
             
             Text(monthName.uppercased())
-                .foregroundStyle(.white)
-                .font(.system(size: 15))
             
             Spacer()
             
-            Button(action: nextMonth) {
+            Button(action: {store.dispatch(.increaseMonth)}) {
                 Image(systemName: "chevron.forward.circle")
-                    .foregroundStyle(.white)
+                    
             }
-            .clipShape(Circle())
+            .buttonStyle(.plain)
+            
+            Spacer()
         }
+        .font(.system(size: 16, weight: .semibold))
+        .foregroundStyle(Color.appBlack)
         .padding(8)
         .frame(maxWidth: .infinity)
         .aspectRatio(13.2, contentMode: .fit)
-        .background(.gray.opacity(0.2))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(.white, lineWidth: 1)
-        }
+        .background(store.state.uiColor)
+        .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 
     private var monthName: String {
-        dateFormatter.monthSymbols[currentMonth - 1]
+        dateFormatter.monthSymbols[store.state.calendar.component(.month, from: store.state.currentDate) - 1]
     }
-
-    private func previousMonth() {
-        currentMonth = currentMonth == 1 ? 12 : currentMonth - 1
-    }
-
-    private func nextMonth() {
-        currentMonth = currentMonth == 12 ? 1 : currentMonth + 1
-    }
-}
-
-
-#Preview {
-    MonthNavigator(currentMonth: .constant(1))
 }
