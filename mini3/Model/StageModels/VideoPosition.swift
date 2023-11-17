@@ -39,7 +39,7 @@ extension Item {
     func toSimpleVideo() -> VideoPosition {
         return VideoPosition(
             title: snippet.title,
-            thumbnailURL: snippet.thumbnails.high.url,
+            thumbnailURL: snippet.thumbnails.default.url,
             videoURL: URL(string: "https://www.youtube.com/watch?v=\(id.videoId)")!
         )
     }

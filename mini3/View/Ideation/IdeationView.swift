@@ -52,39 +52,41 @@ struct IdeationView: View {
 //                }
 //                
                 //Buttons
-                HStack {
-                    Button(action: {
-                        withAnimation {
-                            
-                            currentIndex = max(0, currentIndex - 1)
+                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 {
+                    HStack {
+                        Button(action: {
+                            withAnimation {
+                                
+                                currentIndex = max(0, currentIndex - 1)
+                            }
+                        }) {
+                            Image(systemName: "arrow.left")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .padding()
                         }
-                    }) {
-                        Image(systemName: "arrow.left")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .padding()
+                        
+                        Spacer()
+                            .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)
+                        
+                        Button(action: {
+                            if currentIndex == 2 {
+                                store.dispatch(.show(true))
+                            } else {
+                                store.dispatch(.show(false))
+                            }
+                            withAnimation {
+                                currentIndex = min(4 - 1, currentIndex + 1)
+                            }
+                        }) {
+                            Image(systemName: "arrow.right")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .padding()
+                        }
                     }
-                    
-                    Spacer()
-                        .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)
-                    
-                    Button(action: {
-                        if currentIndex == 2 {
-                            store.dispatch(.show(true))
-                        } else {
-                            store.dispatch(.show(false))
-                        }
-                        withAnimation {
-                            currentIndex = min(4 - 1, currentIndex + 1)
-                        }
-                    }) {
-                        Image(systemName: "arrow.right")
-                            .resizable()
-                            .frame(width: 40, height: 40)
-                            .padding()
-                    }
+                    .foregroundColor(.white)
                 }
-                .foregroundColor(.white)
             }
             .padding()
             .frame(width: geometry.size.width, height: geometry.size.height)

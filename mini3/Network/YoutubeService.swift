@@ -23,7 +23,7 @@ final class YoutubeService: Service {
             URLQueryItem(name: "q", value: query),
             URLQueryItem(name: "key", value: Secrets.YT_API_KEY),
             URLQueryItem(name: "type", value: "video"),
-            URLQueryItem(name: "maxResults", value: "3")
+            URLQueryItem(name: "maxResults", value: "5")
         ]
         urlComponents?.queryItems = queryItems
         

@@ -29,11 +29,8 @@ struct ThirdStageView: View {
                 // MARK: - Appearing Videos
                 ForEach((store.state.currentProject?.appearingVideos ?? []).filter { !(store.state.currentProject?.selectedVideos ?? []).contains($0)}) { videoPosition in
                     YoutubeView(video: videoPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), screenSize: geometry.size, onSelected: {
-                        withAnimation(.easeIn(duration: 1)){
-                            store.dispatch(.selectVideo(videoPosition))
+                            //Touch
                             fetchVideos(with: videoPosition.title, geometry: geometry)
-                            
-                        }
                     })
                     .animation(.easeInOut(duration: 1), value: videoPosition.isVisible)
                     .onAppear {
@@ -57,8 +54,9 @@ struct ThirdStageView: View {
                     YoutubeView(
                         video: videoPosition, isSelected: true, fontSize: calculateFontSize(screenSize: geometry.size), screenSize: geometry.size,
                         onSelected: {
+                            print("deselect")
                             withAnimation(.easeOut(duration: 1)){
-                                store.dispatch(.selectVideo(videoPosition))
+                                store.dispatch(.hideVideo(videoPosition))
                             }
                         })
                     .position(x: videoPosition.relativeX * geometry.size.width,
@@ -79,11 +77,13 @@ struct ThirdStageView: View {
         })
     }
     
+    // Testando outra altenativa de posicionar
     private func positionForIndex(_ index: Int, total: Int, startAngle: CGFloat = 0, screenSize: CGSize) -> CGPoint {
         let angle = (2 * .pi / CGFloat(total)) * CGFloat(index) + startAngle
         return CGPoint(x: (circleSize / 2) * cos(angle) + screenSize.width / 2,
                        y: (circleSize / 2) * sin(angle) + screenSize.height / 2)
     }
+    
     
     private func fetchVideos(with searchQuery: String, geometry: GeometryProxy) {
         youtubeService.fetch(using: searchQuery) { result in
@@ -99,19 +99,20 @@ struct ThirdStageView: View {
                         video.relativeY = pos.y
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
-                                store.dispatch(.showVideo(video))
+//                                store.dispatch(.showVideo(video))
                                 handleVideoAppearance(videoPosition: video)
                             }
                         }
                     }
                 case .failure(let error):
-                    // Tratar erro
+                    print(error)
                     self.errorMessage = error.localizedDescription
                     self.error = true
                 }
             }
         }
     }
+    
 
     private func handleVideoAppearance(videoPosition: VideoPosition) {
         if !(store.state.currentProject?.selectedVideos.contains(videoPosition) ?? false) {
@@ -125,8 +126,6 @@ struct ThirdStageView: View {
                 }
         }
     }
-    
-    
     
     func calculateFontSize(screenSize: CGSize) -> CGFloat {
         let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
