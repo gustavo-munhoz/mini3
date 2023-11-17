@@ -15,14 +15,28 @@ struct mini3App: App {
         middlewares: [userMiddleware, cloudKitMiddleware]
     )
     
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-//            IdeationView(project: Project(id: 1))
+                .aspectRatio(16/9, contentMode: .fit)
+                .frame(minWidth: 1920, minHeight: 1080)
                 .onAppear {
                     store.dispatch(.checkiCloudAccountStatus)
                 }
         }
         .environmentObject(store)
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        if let window = NSApplication.shared.windows.first {
+            window.titleVisibility = .hidden
+            window.titlebarAppearsTransparent = true
+            window.isOpaque = false
+            window.backgroundColor = NSColor(resource: .appBlack)
+        }
     }
 }

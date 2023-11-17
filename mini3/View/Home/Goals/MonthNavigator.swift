@@ -21,11 +21,8 @@ struct MonthNavigator: View {
             }
             .buttonStyle(.plain)
             
-            Spacer()
-            
-            Text(monthName.uppercased())
-            
-            Spacer()
+            Text(monthName.capitalized)
+                .padding(.horizontal, 22)
             
             Button(action: {store.dispatch(.increaseMonth)}) {
                 Image(systemName: "chevron.forward.circle")
@@ -35,7 +32,8 @@ struct MonthNavigator: View {
             
             Spacer()
         }
-        .font(.system(size: 16, weight: .semibold))
+        .font(.system(size: 20, weight: .regular))
+        .fontWidth(.expanded)
         .foregroundStyle(Color.appBlack)
         .padding(8)
         .frame(maxWidth: .infinity)

@@ -67,6 +67,10 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
                 user.goals[index].isCompleted.toggle()
             }
         }
+        
+    case .deleteGoal(let goal):
+        guard let user = newState.user else { break }
+        user.goals.removeAll(where: { $0.id == goal.id })
     
     // MARK: - Navigation
         
@@ -108,7 +112,13 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     
     case .decreaseIndex:
         newState.currentProject?.currentStage.changeStage(by: -1)
+    case .updateProjectTitle(let project, let newTitle):
+        guard let user = newState.user else { break }
+        user.projects.first(where: {$0.id == project.id})?.name = newTitle
         
+    case .deleteProject(let project):
+        guard let user = newState.user else { break }
+        user.projects.removeAll(where: { $0.id == project.id })
 
     // MARK: - Text View
     case.show(let isHidden):
