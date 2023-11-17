@@ -6,6 +6,7 @@ struct TextView: View {
     @State var geometry : GeometryProxy
     var onSend: (String) -> Void
     var placeholder: String
+    
 
     var body: some View {
             

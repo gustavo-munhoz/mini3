@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 
-struct SecondStageView: View {
+struct ThirdStageView: View {
     @EnvironmentObject var store: AppStore
     
     @State private var inputText: String = ""
@@ -9,7 +9,9 @@ struct SecondStageView: View {
     @State private var error : Bool = false
     @State var color : Color
     @Binding var circleSize: CGFloat
-    private let chatGPTService = GPTService.shared
+    @State var positions: [CGPoint] = []
+    private let youtubeService = YoutubeService.shared
+    
     
     var body: some View {
         GeometryReader { geometry in
@@ -19,54 +21,51 @@ struct SecondStageView: View {
                     .overlay {
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width * 0.002)
+                            
                     }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
-                // MARK: - Appearing Concepts
-                ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { conceptPosition in
-                    ConceptView(model: conceptPosition, isSelected: false, onSelected: {
+                // MARK: - Appearing Videos
+                ForEach((store.state.currentProject?.appearingVideos ?? []).filter { !(store.state.currentProject?.selectedVideos ?? []).contains($0)}) { videoPosition in
+                    YoutubeView(video: videoPosition,onSelected: {
                         withAnimation(.easeIn(duration: 1)){
-                            store.dispatch(.selectConcept(conceptPosition))
-                            fetchConcepts(with: conceptPosition.content, geometry: geometry)
+                            store.dispatch(.selectVideo(videoPosition))
+                            fetchVideos(with: videoPosition.title, geometry: geometry)
+                            
                         }
-                    }, fontSize: calculateFontSize(screenSize: geometry.size))
-                    .animation(.easeInOut(duration: 1), value: conceptPosition.isVisible)
+                    }, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size))
+                    .animation(.easeInOut(duration: 1), value: videoPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            if !(store.state.currentProject?.selectedConcepts ?? []).contains(conceptPosition) {
+                            if !(store.state.currentProject?.selectedVideos ?? []).contains(videoPosition) {
                                 withAnimation(.easeOut(duration: 1)) {
-                                    conceptPosition.isVisible = false
+                                    videoPosition.isVisible = false
                                 }
                             }
                         }
                     }
-                    .position(x: conceptPosition.relativeX * geometry.size.width,
-                              y: conceptPosition.relativeY * geometry.size.height)
+                    .position(x: videoPosition.relativeX * geometry.size.width,
+                              y: videoPosition.relativeY * geometry.size.height)
                 }
                 
                 // MARK: - Selected Concepts
-                ForEach((store.state.currentProject?.selectedConcepts ?? [])) { conceptPosition in
-                    ConceptView(
-                        model: conceptPosition,
-                        isSelected: true,
+                ForEach((store.state.currentProject?.selectedVideos ?? [])) { videoPosition in
+                    YoutubeView(
+                        video: videoPosition,
                         onSelected: {
                             withAnimation(.easeOut(duration: 1)){
-                                store.dispatch(.selectConcept(conceptPosition))
+                                store.dispatch(.selectVideo(videoPosition))
                             }
-                        }, fontSize: calculateFontSize(screenSize: geometry.size))
-                    .position(x: conceptPosition.relativeX * geometry.size.width,
-                              y: conceptPosition.relativeY * geometry.size.height)
+                        }, isSelected: true, fontSize: calculateFontSize(screenSize: geometry.size))
+                    .position(x: videoPosition.relativeX * geometry.size.width,
+                              y: videoPosition.relativeY * geometry.size.height)
                 }
                 
                 // MARK: - Input Concept
                 TextView(color: color, geometry: geometry, onSend: { text in
                     inputText = text
-                    let newConceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputText, fontSize: calculateFontSize(screenSize: geometry.size))
-                    if !inputText.isEmpty {
-                        store.dispatch(.selectConcept(newConceptPosition))
-                    }
-                    fetchConcepts(with: inputText, geometry: geometry)
+                    fetchVideos(with: inputText, geometry: geometry)
                     inputText = ""
                 }, placeholder: "Write your suggestions here...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
@@ -77,40 +76,34 @@ struct SecondStageView: View {
         })
     }
     
-    private func fetchConcepts(with concept: String, geometry: GeometryProxy) {
-        let system = chatGPTService.createMessage(withRole: "system", content: Secrets.PROMPT_1)
-        guard var wordPositions = store.state.currentProject?.selectedWords else { return }
-        
-        
-        let words = chatGPTService.createMessage(
-            withRole: "User",
-            content: "\(wordPositions.map { $0.content }.joined(separator: ","))")
-        let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
-        
-        chatGPTService.chatGPT(messages: [system, message]) { result in
-            switch result {
-            case .success(let result):
-                let gptConcepts = chatGPTService.extractConcepts(from: result)
-                switch gptConcepts {
-                case .success(let jsonConcepts):
+    private func fetchVideos(with searchQuery: String, geometry: GeometryProxy) {
+        youtubeService.fetch(using: searchQuery) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let items):
                     var delay = 0.0
-                    for concept in jsonConcepts {
+                    for item in items {
                         delay += 1
+                        let pos = generateNonOverlappingPosition(screenSize: geometry.size, fontSize: calculateFontSize(screenSize: geometry.size))
+                        let video = item.toSimpleVideo()
+                        video.relativeX = pos.x
+                        video.relativeY = pos.y
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
-                                let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
-                                store.dispatch(.showConcept(conceptPosition))
+                                store.dispatch(.showVideo(video))
                             }
                         }
                     }
                 case .failure(let error):
-                    print("JSON to string error: \(error)")
+                    // Tratar erro
+                    self.errorMessage = error.localizedDescription
+                    self.error = true
                 }
-            case .failure(let error):
-                print("API call error: \(error)")
             }
         }
     }
+
+    
     
     
     func calculateFontSize(screenSize: CGSize) -> CGFloat {
@@ -156,38 +149,20 @@ struct SecondStageView: View {
         print(rect1.intersects(rect2))
         return rect1.intersects(rect2)
     }
-    func generateNonOverlappingPosition(screenSize: CGSize, word: String, fontSize: CGFloat) -> ConceptPosition {
+    func generateNonOverlappingPosition(screenSize: CGSize, fontSize: CGFloat) -> CGPoint {
         let circleCenter = CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
         let circleRadius = circleSize / 2
-        
+
         // Tente encontrar uma posição não sobreposta um número limitado de vezes
         for _ in 0..<100000 {
             let randomPoint = randomPointInCircle(center: circleCenter, radius: circleRadius)
-            let wordRect = rectangleAroundString(at: randomPoint, for: word, with: fontSize)
-            
-            // Verifique se o retângulo da palavra está dentro do círculo
-            if isRectangleInsideCircle(wordRect, inCircle: circleCenter, radius: circleRadius) {
-                var overlapFound = false
-                
-                // Verifique se o novo retângulo se sobrepõe a algum dos retângulos existentes
-                for existingWordPosition in (store.state.currentProject?.appearingConcepts ?? []) {
-                    let existingRect = rectangleAroundString(at: CGPoint(x: existingWordPosition.relativeX * screenSize.width, y: existingWordPosition.relativeY * screenSize.height), for: existingWordPosition.content, with: fontSize)
-                    if wordRect.intersects(existingRect) {
-                        overlapFound = true
-                        break
-                    }
-                }
-                
-                // Se não houver sobreposição, esta é uma posição válida
-                if !overlapFound {
-                    let relativeX = randomPoint.x / screenSize.width
-                    let relativeY = randomPoint.y / screenSize.height
-                    return ConceptPosition(content: word, relativeX: relativeX, relativeY: relativeY)
-                }
+            if !positions.contains(randomPoint) {
+                self.positions.append(CGPoint(x: randomPoint.x / screenSize.width, y: randomPoint.y / screenSize.height))
+                return CGPoint(x: randomPoint.x / screenSize.width, y: randomPoint.y / screenSize.height)
             }
         }
-        
         // Se todas as tentativas falharem, retorne uma posição padrão (centro, por exemplo)
-        return ConceptPosition(content: word, relativeX: 0.5, relativeY: 0.5)
+        return CGPoint(x: 0.5, y: 0.5)
     }
+
 }

@@ -12,6 +12,7 @@ struct AppState {
     var user: User? = nil
     var calendar: Calendar = Calendar.current
     var currentDate: Date = Date()
+    var inputTextEnable : Bool = true
     var isProfileExpanded: Bool = false
     var onboardingState: OnboardingState = .started
     

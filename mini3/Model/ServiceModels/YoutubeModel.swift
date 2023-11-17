@@ -1,3 +1,4 @@
+import Foundation
 struct YouTubeResponse: Codable {
     let kind: String
     let etag: String
@@ -45,3 +46,5 @@ struct Thumbnail: Codable {
     let width: Int
     let height: Int
 }
+
+
