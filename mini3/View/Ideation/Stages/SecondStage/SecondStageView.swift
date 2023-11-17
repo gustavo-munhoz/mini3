@@ -25,12 +25,12 @@ struct SecondStageView: View {
 
                 // MARK: - Appearing Concepts
                 ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { conceptPosition in
-                    ConceptView(model: conceptPosition, isSelected: false, onSelected: {
+                    ConceptView(model: conceptPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
                         withAnimation(.easeIn(duration: 1)){
                             store.dispatch(.selectConcept(conceptPosition))
                             fetchConcepts(with: conceptPosition.content, geometry: geometry)
                         }
-                    }, fontSize: calculateFontSize(screenSize: geometry.size))
+                    })
                     .animation(.easeInOut(duration: 1), value: conceptPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -54,7 +54,7 @@ struct SecondStageView: View {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectConcept(conceptPosition))
                             }
-                        }, fontSize: calculateFontSize(screenSize: geometry.size))
+                        })
                     .position(x: conceptPosition.relativeX * geometry.size.width,
                               y: conceptPosition.relativeY * geometry.size.height)
                 }
@@ -127,19 +127,18 @@ struct SecondStageView: View {
         }
     }
     
-    
     func calculateFontSize(screenSize: CGSize) -> CGFloat {
-    let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
-    let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
-    
-    // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
-    let scalingDimension = min(screenSize.width, screenSize.height)
-    
-    // Calcule o tamanho da fonte ajustado
-    let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
-    
-    return adjustedFontSize
-}
+        let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
+        let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
+        
+        // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
+        let scalingDimension = min(screenSize.width, screenSize.height)
+        
+        // Calcule o tamanho da fonte ajustado
+        let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
+        
+        return adjustedFontSize
+    }
     func randomPointInCircle(center: CGPoint, radius: CGFloat) -> CGPoint {
         let angle = CGFloat.random(in: 0..<2 * .pi)
         let randomRadius = CGFloat.random(in: 0..<radius)
