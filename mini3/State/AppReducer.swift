@@ -107,6 +107,11 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             user.projects.append(Project(id: user.projects.count + 1))
         }
         
+    case .increaseIndex:
+        newState.currentProject?.currentStage.changeStage(by: 1)
+    
+    case .decreaseIndex:
+        newState.currentProject?.currentStage.changeStage(by: -1)
     case .updateProjectTitle(let project, let newTitle):
         guard let user = newState.user else { break }
         user.projects.first(where: {$0.id == project.id})?.name = newTitle
@@ -115,7 +120,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         guard let user = newState.user else { break }
         user.projects.removeAll(where: { $0.id == project.id })
 
-    // MARK:
+    // MARK: - Text View
     case.show(let isHidden):
         if isHidden{
             newState.isHiddenText = true
