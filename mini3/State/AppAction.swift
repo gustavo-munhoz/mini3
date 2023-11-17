@@ -41,6 +41,8 @@ enum AppAction {
     
     // MARK: Projects
     case createNewProject
+    case updateProjectTitle(Project, String)
+    case deleteProject(Project)
     case projectCreated(Project)
     case projectSavedSuccessfully(Project)
     

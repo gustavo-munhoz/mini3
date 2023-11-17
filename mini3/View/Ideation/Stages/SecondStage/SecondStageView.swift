@@ -25,12 +25,12 @@ struct SecondStageView: View {
 
                 // MARK: - Appearing Concepts
                 ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { conceptPosition in
-                    ConceptView(model: conceptPosition, isSelected: false, onSelected: {
+                    ConceptView(model: conceptPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
                         withAnimation(.easeIn(duration: 1)){
                             store.dispatch(.selectConcept(conceptPosition))
                             fetchConcepts(with: conceptPosition.content, geometry: geometry)
                         }
-                    }, fontSize: calculateFontSize(screenSize: geometry.size))
+                    })
                     .animation(.easeInOut(duration: 1), value: conceptPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -54,7 +54,7 @@ struct SecondStageView: View {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectConcept(conceptPosition))
                             }
-                        }, fontSize: calculateFontSize(screenSize: geometry.size))
+                        })
                     .position(x: conceptPosition.relativeX * geometry.size.width,
                               y: conceptPosition.relativeY * geometry.size.height)
                 }

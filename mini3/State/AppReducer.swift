@@ -103,6 +103,13 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             user.projects.append(Project(id: user.projects.count + 1))
         }
         
+    case .updateProjectTitle(let project, let newTitle):
+        guard let user = newState.user else { break }
+        user.projects.first(where: {$0.id == project.id})?.name = newTitle
+        
+    case .deleteProject(let project):
+        guard let user = newState.user else { break }
+        user.projects.removeAll(where: { $0.id == project.id })
 
     // MARK:
     case.show(let isHidden):
