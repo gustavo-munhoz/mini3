@@ -43,6 +43,9 @@ enum AppAction {
     case createNewProject
     case projectCreated(Project)
     case projectSavedSuccessfully(Project)
+    case increaseIndex
+    case decreaseIndex
+
     
     // MARK: Text View
     case show(Bool)

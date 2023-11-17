@@ -10,6 +10,7 @@ import SwiftUI
 struct ConceptView: View, ViewRepresentable {
     typealias Model = ConceptPosition
     @ObservedObject var model: Model
+    var id = UUID()
     var isSelected: Bool
     var fontSize: CGFloat
     var onSelected: () -> Void

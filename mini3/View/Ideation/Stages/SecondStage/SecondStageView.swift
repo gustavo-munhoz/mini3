@@ -25,7 +25,9 @@ struct SecondStageView: View {
 
                 // MARK: - Appearing Concepts
                 ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { conceptPosition in
-                    ConceptView(model: conceptPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
+                    
+                    ConceptView(model: conceptPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), 
+                                onSelected: {
                         withAnimation(.easeIn(duration: 1)){
                             store.dispatch(.selectConcept(conceptPosition))
                             fetchConcepts(with: conceptPosition.content, geometry: geometry)
@@ -43,6 +45,7 @@ struct SecondStageView: View {
                     }
                     .position(x: conceptPosition.relativeX * geometry.size.width,
                               y: conceptPosition.relativeY * geometry.size.height)
+                    .gesture(DragGesture())
                 }
                 
                 // MARK: - Selected Concepts
@@ -100,7 +103,7 @@ struct SecondStageView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
                                 let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
-                                store.dispatch(.showConcept(conceptPosition))
+//                                store.dispatch(.showConcept(conceptPosition))
                                 handleConceptAppearance(conceptPosition: conceptPosition)
                             }
                         }
@@ -170,6 +173,7 @@ struct SecondStageView: View {
         print(rect1.intersects(rect2))
         return rect1.intersects(rect2)
     }
+    
     func generateNonOverlappingPosition(screenSize: CGSize, word: String, fontSize: CGFloat) -> ConceptPosition {
         let circleCenter = CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
         let circleRadius = circleSize / 2

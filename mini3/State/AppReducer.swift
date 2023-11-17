@@ -103,8 +103,14 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             user.projects.append(Project(id: user.projects.count + 1))
         }
         
+    case .increaseIndex:
+        newState.currentProject?.currentStage.changeStage(by: 1)
+    
+    case .decreaseIndex:
+        newState.currentProject?.currentStage.changeStage(by: -1)
+        
 
-    // MARK:
+    // MARK: - Text View
     case.show(let isHidden):
         if isHidden{
             newState.isHiddenText = true
