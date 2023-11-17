@@ -28,13 +28,13 @@ struct ThirdStageView: View {
 
                 // MARK: - Appearing Videos
                 ForEach((store.state.currentProject?.appearingVideos ?? []).filter { !(store.state.currentProject?.selectedVideos ?? []).contains($0)}) { videoPosition in
-                    YoutubeView(video: videoPosition,onSelected: {
+                    YoutubeView(video: videoPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), screenSize: geometry.size, onSelected: {
                         withAnimation(.easeIn(duration: 1)){
                             store.dispatch(.selectVideo(videoPosition))
                             fetchVideos(with: videoPosition.title, geometry: geometry)
                             
                         }
-                    }, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size))
+                    })
                     .animation(.easeInOut(duration: 1), value: videoPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
@@ -49,15 +49,18 @@ struct ThirdStageView: View {
                               y: videoPosition.relativeY * geometry.size.height)
                 }
                 
+                
+                
+                
                 // MARK: - Selected Concepts
                 ForEach((store.state.currentProject?.selectedVideos ?? [])) { videoPosition in
                     YoutubeView(
-                        video: videoPosition,
+                        video: videoPosition, isSelected: true, fontSize: calculateFontSize(screenSize: geometry.size), screenSize: geometry.size,
                         onSelected: {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectVideo(videoPosition))
                             }
-                        }, isSelected: true, fontSize: calculateFontSize(screenSize: geometry.size))
+                        })
                     .position(x: videoPosition.relativeX * geometry.size.width,
                               y: videoPosition.relativeY * geometry.size.height)
                 }
@@ -67,13 +70,19 @@ struct ThirdStageView: View {
                     inputText = text
                     fetchVideos(with: inputText, geometry: geometry)
                     inputText = ""
-                }, placeholder: "Write your suggestions here...")
+                }, placeholder: "...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
         }
         .alert(isPresented: $error, content: {
             Alert(title: Text("Erro"), message: Text(errorMessage ?? "Erro desconhecido"), dismissButton: .default(Text("OK")))
         })
+    }
+    
+    private func positionForIndex(_ index: Int, total: Int, startAngle: CGFloat = 0, screenSize: CGSize) -> CGPoint {
+        let angle = (2 * .pi / CGFloat(total)) * CGFloat(index) + startAngle
+        return CGPoint(x: (circleSize / 2) * cos(angle) + screenSize.width / 2,
+                       y: (circleSize / 2) * sin(angle) + screenSize.height / 2)
     }
     
     private func fetchVideos(with searchQuery: String, geometry: GeometryProxy) {
@@ -91,6 +100,7 @@ struct ThirdStageView: View {
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
                                 store.dispatch(.showVideo(video))
+                                handleVideoAppearance(videoPosition: video)
                             }
                         }
                     }
@@ -103,21 +113,33 @@ struct ThirdStageView: View {
         }
     }
 
+    private func handleVideoAppearance(videoPosition: VideoPosition) {
+        if !(store.state.currentProject?.selectedVideos.contains(videoPosition) ?? false) {
+            store.dispatch(.showVideo(videoPosition))
+            videoPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
+                .autoconnect()
+                .sink { _ in
+                    if !(store.state.currentProject?.selectedVideos.contains(videoPosition) ?? false) {
+                        store.dispatch(.hideVideo(videoPosition))
+                    }
+                }
+        }
+    }
     
     
     
     func calculateFontSize(screenSize: CGSize) -> CGFloat {
-    let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
-    let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
-    
-    // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
-    let scalingDimension = min(screenSize.width, screenSize.height)
-    
-    // Calcule o tamanho da fonte ajustado
-    let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
-    
-    return adjustedFontSize
-}
+        let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
+        let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
+        
+        // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
+        let scalingDimension = min(screenSize.width, screenSize.height)
+        
+        // Calcule o tamanho da fonte ajustado
+        let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
+        
+        return adjustedFontSize
+    }
     func randomPointInCircle(center: CGPoint, radius: CGFloat) -> CGPoint {
         let angle = CGFloat.random(in: 0..<2 * .pi)
         let randomRadius = CGFloat.random(in: 0..<radius)

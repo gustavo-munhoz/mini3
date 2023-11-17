@@ -26,26 +26,27 @@ struct SecondStageView: View {
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
 
                 // MARK: - Appearing Concepts
-                ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { wordPosition in
-                    ConceptView(model: wordPosition,isSelected: false,onSelected: {
-                        withAnimation(.easeIn(duration: 1)){
+                ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0) }) { wordPosition in
+                    ConceptView(model: wordPosition,isSelected: false,fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
+                        withAnimation(.easeInOut(duration: 1)){
                             store.dispatch(.selectConcept(wordPosition))
                             fetchConcepts(with: wordPosition.content, geometry: geometry)
-                            
                         }
-                    }, fontSize: calculateFontSize(screenSize: geometry.size))
+                    })
                     .animation(.easeInOut(duration: 1), value: wordPosition.isVisible)
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
                             if !(store.state.currentProject?.selectedConcepts ?? []).contains(wordPosition) {
                                 withAnimation(.easeOut(duration: 1)) {
                                     wordPosition.isVisible = false
+                                    
                                 }
                             }
                         }
                     }
                     .position(x: wordPosition.relativeX * geometry.size.width,
                               y: wordPosition.relativeY * geometry.size.height)
+                    
                 }
                 
                 // MARK: - Selected Concepts
@@ -53,11 +54,11 @@ struct SecondStageView: View {
                     ConceptView(
                         model: wordPosition,
                         isSelected: true,
-                        onSelected: {
+                        fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectConcept(wordPosition))
                             }
-                        }, fontSize: calculateFontSize(screenSize: geometry.size))
+                        })
                     .position(x: wordPosition.relativeX * geometry.size.width,
                               y: wordPosition.relativeY * geometry.size.height)
                 }
@@ -103,6 +104,7 @@ struct SecondStageView: View {
                             withAnimation(.easeIn(duration: 1)) {
                                 let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
                                 store.dispatch(.showConcept(conceptPosition))
+                                handleConceptAppearance(conceptPosition: conceptPosition)
                             }
                         }
                     }
@@ -112,6 +114,19 @@ struct SecondStageView: View {
             case .failure(let error):
                 print("API call error: \(error)")
             }
+        }
+    }
+    
+    private func handleConceptAppearance(conceptPosition: ConceptPosition) {
+        if !(store.state.currentProject?.selectedConcepts.contains(conceptPosition) ?? false) {
+            store.dispatch(.showConcept(conceptPosition))
+            conceptPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
+                .autoconnect()
+                .sink { _ in
+                    if !(store.state.currentProject?.selectedConcepts.contains(conceptPosition) ?? false) {
+                        store.dispatch(.hideConcept(conceptPosition))
+                    }
+                }
         }
     }
     

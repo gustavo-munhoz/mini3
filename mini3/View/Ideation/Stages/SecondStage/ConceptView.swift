@@ -11,8 +11,8 @@ struct ConceptView: View, ViewRepresentable {
     typealias Model = ConceptPosition
     @ObservedObject var model: Model
     var isSelected: Bool
-    var onSelected: () -> Void
     var fontSize: CGFloat
+    var onSelected: () -> Void
 
     var body: some View {
         Text(model.content)

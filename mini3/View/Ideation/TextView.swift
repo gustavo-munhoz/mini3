@@ -1,11 +1,13 @@
 import SwiftUI
 
 struct TextView: View {
+    @EnvironmentObject var store: AppStore
     @State private var suggestionText: String = ""
     @State var color : Color
     @State var geometry : GeometryProxy
     var onSend: (String) -> Void
     var placeholder: String
+
     
 
     var body: some View {
@@ -49,6 +51,7 @@ struct TextView: View {
             Spacer()
         }
         .frame(width: geometry.size.width * 0.2)
+        .hidden(store.state.isHiddenText)
     }
     
     private func calculateFontSize(screenSize: CGSize) -> CGFloat {

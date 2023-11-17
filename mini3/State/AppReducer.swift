@@ -51,6 +51,14 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             user.projects.append(Project(id: user.projects.count + 1))
         }
         
+    // MARK:
+    case.show(let isHidden):
+        if isHidden{
+            newState.isHiddenText = true
+        } else {
+            newState.isHiddenText = false
+        }
+        
     // MARK: First Stage
     case .selectWord(let wordPosition):
         guard let project = newState.currentProject else { break }
@@ -63,7 +71,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         }
         
     case .showWord(let wordPosition):
-        state.currentProject?.appearingWords.append(wordPosition)
+        newState.currentProject?.appearingWords.append(wordPosition)
         
     case .hideWord(let wordPosition):
         newState.currentProject?.appearingWords.removeAll { $0.id == wordPosition.id }
@@ -79,10 +87,13 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         }
         
     case .showConcept(let conceptPosition):
-        state.currentProject?.appearingConcepts.append(conceptPosition)
+        newState.currentProject?.appearingConcepts.append(conceptPosition)
         
     case .hideConcept(let conceptPosition):
-        state.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
+        if !conceptPosition.isVisible{
+            newState.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
+        }
+        
         
         
     // MARK: Third Stage
@@ -95,10 +106,10 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         }
         
     case .showVideo(let videoPosition):
-        state.currentProject?.appearingVideos.append(videoPosition)
+        newState.currentProject?.appearingVideos.append(videoPosition)
         
     case .hideVideo(let videoPosition):
-        state.currentProject?.appearingVideos.removeAll { $0.id == videoPosition.id }
+        newState.currentProject?.appearingVideos.removeAll { $0.id == videoPosition.id }
 
     default:
         break

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct IdeationView: View {
-    
+    @EnvironmentObject var store: AppStore
     @State var project: Project
     @State private var currentIndex: Int = 0
     @State var color: Color = .blue
@@ -22,7 +22,6 @@ struct IdeationView: View {
             ZStack {
                 if currentIndex == 3 {
                     ZStack{
-
                         ThirdStageView(color: .appBlue, circleSize: .constant(circleSize))
                             .scaleEffect(0.8)
                             .disabled(true)
@@ -56,6 +55,7 @@ struct IdeationView: View {
                 HStack {
                     Button(action: {
                         withAnimation {
+                            
                             currentIndex = max(0, currentIndex - 1)
                         }
                     }) {
@@ -69,6 +69,11 @@ struct IdeationView: View {
                         .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)
                     
                     Button(action: {
+                        if currentIndex == 2 {
+                            store.dispatch(.show(true))
+                        } else {
+                            store.dispatch(.show(false))
+                        }
                         withAnimation {
                             currentIndex = min(4 - 1, currentIndex + 1)
                         }
