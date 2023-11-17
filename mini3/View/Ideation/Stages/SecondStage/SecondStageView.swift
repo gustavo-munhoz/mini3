@@ -50,7 +50,7 @@ struct SecondStageView: View {
                     ConceptView(
                         model: conceptPosition,
                         isSelected: true,
-                        onSelected: {
+                        fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectConcept(conceptPosition))
                             }
@@ -101,6 +101,7 @@ struct SecondStageView: View {
                             withAnimation(.easeIn(duration: 1)) {
                                 let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
                                 store.dispatch(.showConcept(conceptPosition))
+                                handleConceptAppearance(conceptPosition: conceptPosition)
                             }
                         }
                     }
@@ -110,6 +111,19 @@ struct SecondStageView: View {
             case .failure(let error):
                 print("API call error: \(error)")
             }
+        }
+    }
+    
+    private func handleConceptAppearance(conceptPosition: ConceptPosition) {
+        if !(store.state.currentProject?.selectedConcepts.contains(conceptPosition) ?? false) {
+            store.dispatch(.showConcept(conceptPosition))
+            conceptPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
+                .autoconnect()
+                .sink { _ in
+                    if !(store.state.currentProject?.selectedConcepts.contains(conceptPosition) ?? false) {
+                        store.dispatch(.hideConcept(conceptPosition))
+                    }
+                }
         }
     }
     

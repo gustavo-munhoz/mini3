@@ -103,6 +103,15 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             user.projects.append(Project(id: user.projects.count + 1))
         }
         
+
+    // MARK:
+    case.show(let isHidden):
+        if isHidden{
+            newState.isHiddenText = true
+        } else {
+            newState.isHiddenText = false
+        }
+        
     // MARK: - First Stage
         
     case .selectWord(let wordPosition):
@@ -116,7 +125,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         }
         
     case .showWord(let wordPosition):
-        state.currentProject?.appearingWords.append(wordPosition)
+        newState.currentProject?.appearingWords.append(wordPosition)
         
     case .hideWord(let wordPosition):
         newState.currentProject?.appearingWords.removeAll { $0.id == wordPosition.id }
