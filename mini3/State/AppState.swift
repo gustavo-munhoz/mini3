@@ -14,6 +14,7 @@ struct AppState {
     var currentDate: Date = Date()
     var inputTextEnable : Bool = true
     var isProfileExpanded: Bool = false
+    var onboardingState: OnboardingState = .started
     
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {

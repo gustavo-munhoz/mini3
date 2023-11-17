@@ -6,7 +6,7 @@
 //
 
 import CloudKit
-
+import SwiftUI
 
 enum AppAction {
     // MARK: iCloud
@@ -16,10 +16,20 @@ enum AppAction {
     case iCloudStatusError
     case requestUserRecord(fullName: String)
     
+    // MARK: Onboarding
+    case moveToProjectsOnboarding
+    case moveToMotivationOnboarding
+    case moveToCalendarOnboarding
+    case moveToProfileOnboarding
+    case finishOnboarding
+    
     // MARK: Profile
     case expandProfileModal
+    case setUIColor(Color)
     
     // MARK: Goals
+    case createNewGoal
+    case updateGoalContent(Goal, String)
     case toggleGoalCompletion(Int)
     
     // MARK: Navigation

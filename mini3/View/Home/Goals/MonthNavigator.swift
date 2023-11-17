@@ -9,7 +9,6 @@ import SwiftUI
 
 struct MonthNavigator: View {
     @EnvironmentObject var store: AppStore
-    @Binding var currentMonth: Int
     private let dateFormatter = DateFormatter()
 
     var body: some View {
@@ -17,30 +16,27 @@ struct MonthNavigator: View {
             
             Spacer()
             
-            Button(action: previousMonth) {
+            Button(action: {store.dispatch(.decreaseMonth)}) {
                 Image(systemName: "chevron.backward.circle")
-                    .foregroundStyle(Color.appBlack)
-                    .font(.system(size: 15))
             }
             .buttonStyle(.plain)
             
             Spacer()
             
             Text(monthName.uppercased())
-                .foregroundStyle(Color("AppBlack"))
-                .font(.system(size: 15))
             
             Spacer()
             
-            Button(action: nextMonth) {
+            Button(action: {store.dispatch(.increaseMonth)}) {
                 Image(systemName: "chevron.forward.circle")
-                    .foregroundStyle(Color.appBlack)
-                    .font(.system(size: 15))
+                    
             }
             .buttonStyle(.plain)
             
             Spacer()
         }
+        .font(.system(size: 16, weight: .semibold))
+        .foregroundStyle(Color.appBlack)
         .padding(8)
         .frame(maxWidth: .infinity)
         .aspectRatio(13.2, contentMode: .fit)
@@ -49,19 +45,6 @@ struct MonthNavigator: View {
     }
 
     private var monthName: String {
-        dateFormatter.monthSymbols[currentMonth - 1]
+        dateFormatter.monthSymbols[store.state.calendar.component(.month, from: store.state.currentDate) - 1]
     }
-
-    private func previousMonth() {
-        currentMonth = currentMonth == 1 ? 12 : currentMonth - 1
-    }
-
-    private func nextMonth() {
-        currentMonth = currentMonth == 12 ? 1 : currentMonth + 1
-    }
-}
-
-
-#Preview {
-    MonthNavigator(currentMonth: .constant(1))
 }
