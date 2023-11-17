@@ -44,6 +44,9 @@ enum AppAction {
     case projectCreated(Project)
     case projectSavedSuccessfully(Project)
     
+    // MARK: Text View
+    case show(Bool)
+    
     // MARK: FirstStage
     case selectWord(WordPosition)
     case showWord(WordPosition)
