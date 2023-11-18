@@ -138,6 +138,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         } else {
             // Selecionar a palavra
             newState.currentProject?.selectedWords.append(wordPosition)
+            newState.currentProject?.appearingWords.removeAll { $0.id == wordPosition.id }
         }
         
     case .showWord(let wordPosition):
@@ -155,10 +156,13 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             newState.currentProject?.selectedConcepts.removeAll { $0 == conceptPosition }
         } else {
             newState.currentProject?.selectedConcepts.append(conceptPosition)
+            newState.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
         }
         
     case .showConcept(let conceptPosition):
-        newState.currentProject?.appearingConcepts.append(conceptPosition)
+        if !(newState.currentProject?.appearingConcepts.contains(where: {$0.id == conceptPosition.id}) ?? false) {
+            newState.currentProject?.appearingConcepts.append(conceptPosition)
+        }
         
     case .hideConcept(let conceptPosition):
         newState.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
