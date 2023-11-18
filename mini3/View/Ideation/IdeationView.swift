@@ -51,11 +51,10 @@ struct IdeationView: View {
                             .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)
                         
                         Button(action: {
-                            
-                            withAnimation {
+                            withAnimation(.easeInOut(duration: 1.5)) {
                                 store.dispatch(.increaseIndex)
                                 currentIndex = store.state.currentProject?.currentStage.rawValue ?? 0
-                                print(store.state.currentProject?.currentStage.rawValue as Any)
+//                                print(store.state.currentProject?.currentStage.rawValue as Any)
                                 if store.state.currentProject?.currentStage == .generalView {
                                     store.dispatch(.show(true))
                                 } else {

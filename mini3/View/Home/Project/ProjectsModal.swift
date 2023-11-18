@@ -110,4 +110,17 @@ struct ProjectsModal: View {
             }
         }
     }
+    private func calculateFontSize(screenSize: CGSize) -> CGFloat {
+        let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
+        let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
+        
+        // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
+        let scalingDimension = min(screenSize.width, screenSize.height)
+        
+        // Calcule o tamanho da fonte ajustado
+        let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
+        
+        return adjustedFontSize
+    }
+    
 }
