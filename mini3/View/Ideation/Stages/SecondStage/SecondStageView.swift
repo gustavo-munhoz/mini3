@@ -26,7 +26,9 @@ struct SecondStageView: View {
 
                 // MARK: - Appearing Concepts
                 ForEach((store.state.currentProject?.appearingConcepts ?? []).filter { !(store.state.currentProject?.selectedConcepts ?? []).contains($0)}) { conceptPosition in
-                    ConceptView(model: conceptPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
+                    
+                    ConceptView(model: conceptPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), 
+                                onSelected: {
                         withAnimation(.easeIn(duration: 1)){
                             store.dispatch(.selectConcept(conceptPosition))
                             if (store.state.currentProject?.appearingConcepts.count ?? 0) <= 10 {

@@ -4,9 +4,6 @@ struct IdeationView: View {
     @EnvironmentObject var store: AppStore
     @State var project: Project
     @State private var currentIndex: Int = 0
-    @State var color: Color = .blue
-    @State private var originalWidth: CGFloat = 0
-    @State private var originalHeight: CGFloat = 0
     @GestureState private var dragOffset: CGFloat = 0
     
     
@@ -16,11 +13,12 @@ struct IdeationView: View {
             let stages = [
                 IdentifiableView(FirstStageView(color: .appPink, circleSize: .constant(circleSize))),
                 IdentifiableView(SecondStageView(color: .appPurple, circleSize: .constant(circleSize))),
+                IdentifiableView(ThirdStageView(color: .appBlue, circleSize: .constant(circleSize))),
                 IdentifiableView(ThirdStageView(color: .appBlue, circleSize: .constant(circleSize)))
             ]
             
             ZStack {
-                if currentIndex == 3 {
+                if store.state.currentProject?.currentStage == .generalView {
                     ZStack{
                         ThirdStageView(color: .appBlue, circleSize: .constant(circleSize))
                             .scaleEffect(0.8)
@@ -38,45 +36,27 @@ struct IdeationView: View {
                         stages[index].view
                             .scaleEffect(currentIndex == index ? 0.8 : 1.3)
                             .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
-                            .disabled(currentIndex != index)
+                            .disabled(store.state.currentProject?.currentStage.rawValue != index)
                     }
                 }
-            
-            
-//            ZStack{
-//                ForEach((0..<3), id: \.self) { index in
-//                    stages[index].view
-//                        .scaleEffect(currentIndex == index ? 0.8 : 1.3)
-//                        .offset(x: offset(index: index, geometry: geometry, circleSize: circleSize), y: 0)
-//                        .disabled(currentIndex != index)
-//                }
-//                
+                
                 //Buttons
-                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 {
+                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 && currentIndex == 0 || (store.state.currentProject?.selectedConcepts.count ?? 0) > 0 && currentIndex == 1 || (store.state.currentProject?.selectedVideos.count ?? 0) > 0 && currentIndex == 2  {
                     HStack {
-                        Button(action: {
-                            withAnimation {
-                                
-                                currentIndex = max(0, currentIndex - 1)
-                            }
-                        }) {
-                            Image(systemName: "arrow.left")
-                                .resizable()
-                                .frame(width: 40, height: 40)
-                                .padding()
-                        }
                         
                         Spacer()
                             .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)
                         
                         Button(action: {
-                            if currentIndex == 2 {
+                            if store.state.currentProject?.currentStage == .generalView {
                                 store.dispatch(.show(true))
                             } else {
                                 store.dispatch(.show(false))
                             }
                             withAnimation {
-                                currentIndex = min(4 - 1, currentIndex + 1)
+                                store.dispatch(.increaseIndex)
+                                currentIndex = store.state.currentProject?.currentStage.rawValue ?? 0
+                                print(store.state.currentProject?.currentStage.rawValue)
                             }
                         }) {
                             Image(systemName: "arrow.right")
