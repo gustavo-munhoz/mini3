@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ConceptView: View, ViewRepresentable {
+struct ConceptView: View{
     typealias Model = ConceptPosition
     @ObservedObject var model: Model
     var id = UUID()

@@ -21,15 +21,18 @@ class Project/*: Codable, Identifiable*/ {
     var appearingVideos: [VideoPosition] = []
     var selectedVideos: [VideoPosition] = []
     
+    var appearingIdeas : [IdeaPosition] = []
+    var finalIdea: IdeaPosition?
+    
     var specificThemes: [String]
     var referenceLinks: [String]
     var contentIdeas: [String]
-    var finalIdea: String?
+
     
-    init(id: Int, name: String = "New Project", currentStage: IdeationStage = .generalThemes,
+    init(id: Int, name: String = "New Project", currentStage: IdeationStage = .words,
          selectedWords: [WordPosition] = [], specificThemes: [String] = [],
          referenceLinks: [String] = [], contentIdeas: [String] = [],
-         finalIdea: String? = nil)
+         finalIdea: IdeaPosition? = nil)
     {
         self.id = id
         self.name = name
@@ -55,7 +58,7 @@ extension Project {
         record["specificThemes"] = specificThemes as CKRecordValue
         record["referenceLinks"] = referenceLinks as CKRecordValue
         record["contentIdeas"] = contentIdeas as CKRecordValue
-        record["finalIdea"] = finalIdea as CKRecordValue?
+//        record["finalIdea"] = finalIdea as CKRecordValue?
         return record
     }
     
@@ -71,8 +74,8 @@ extension Project {
             return nil
         }
         
-        let stage = IdeationStage(rawValue: rawStage) ?? .generalThemes
-        let finalIdea = record["finalIdea"] as? String
+        let stage = IdeationStage(rawValue: rawStage) ?? .words
+        let finalIdea = record["finalIdea"] as? IdeaPosition
         
         let selectedWords = (try? JSONDecoder().decode([WordPosition].self, from: selectedWordsData)) ?? []
         

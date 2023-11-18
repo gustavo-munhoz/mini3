@@ -81,6 +81,18 @@ final class GPTService: Service {
             return .failure(error)
         }
     }
+    
+    func convertToIdeaResponses(from jsonString: String) -> Result<[IdeaResponse], Error> {
+        let jsonData = Data(jsonString.utf8)
+        let decoder = JSONDecoder()
+        do {
+            let responses = try decoder.decode([IdeaResponse].self, from: jsonData)
+            return .success(responses)
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return .failure(error)
+        }
+    }
 
 
 }

@@ -168,7 +168,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         newState.currentProject?.appearingConcepts.removeAll { $0.id == conceptPosition.id }
         
         
-    // MARK: Third Stage
+    // MARK: - Third Stage
     case .selectVideo(let videoPosition):
         guard let project = newState.currentProject else { break }
         if project.selectedVideos.contains(videoPosition) {
@@ -183,6 +183,20 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     case .hideVideo(let videoPosition):
         newState.currentProject?.appearingVideos.removeAll { $0.id == videoPosition.id }
 
+    // MARK: - Fourth Stage
+    case .selectIdea(let ideaPosition):
+        guard let project = newState.currentProject else { break }
+        if project.finalIdea == ideaPosition {
+            newState.currentProject?.finalIdea = IdeaPosition(idea: "", explanation: "", relativeX: 0, relativeY: 0)
+        } else {
+            newState.currentProject?.finalIdea = ideaPosition
+        }
+        
+    case .showIdea(let ideaPosition):
+        newState.currentProject?.appearingIdeas.append(ideaPosition)
+        
+    case .hideIdea(let ideaPosition):
+        newState.currentProject?.appearingIdeas.removeAll { $0.id == ideaPosition.id }
         
     default:
         break

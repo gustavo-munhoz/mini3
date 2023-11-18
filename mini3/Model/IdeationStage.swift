@@ -1,9 +1,9 @@
 enum IdeationStage: Int, Codable {
-    case generalThemes  = 0
-    case specificThemes = 1
-    case referenceLinks = 2
-    case contentIdeas   = 3
-    case generalView    = 4
+    case words       = 0
+    case concepts    = 1
+    case references  = 2
+    case ideas       = 3
+    case generalView = 4
     
     static let count = 5
 

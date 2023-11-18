@@ -88,6 +88,11 @@ struct SecondStageView: View {
                 }, placeholder: "Write your suggestions here...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
+            .onChange(of: store.state.currentProject?.currentStage) { oldValue, newValue in
+                if newValue == IdeationStage.concepts {
+                    fetchConcepts(with: "", geometry: geometry)
+                }
+            }
         }
         .alert(isPresented: $error, content: {
             Alert(title: Text("Erro"), message: Text(errorMessage ?? "Erro desconhecido"), dismissButton: .default(Text("OK")))

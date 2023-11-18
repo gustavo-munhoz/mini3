@@ -3,9 +3,7 @@ import SwiftUI
 import Combine
 
 
-
-
-struct RelatedWordView: View, ViewRepresentable {
+struct RelatedWordView: View{
     typealias Model = WordPosition
     @ObservedObject var model: WordPosition
     var isSelected: Bool
