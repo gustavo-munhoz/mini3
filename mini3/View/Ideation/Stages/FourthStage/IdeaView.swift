@@ -1,33 +1,55 @@
 import SwiftUI
 
 struct IdeaView: View {
-    @EnvironmentObject var store: AppStore
-
-    let video: VideoPosition
-    @State var isSelected: Bool
-    @State var fontSize: CGFloat
-    @State var screenSize: CGSize
-    var onSelected: () -> Void
-
-    private let thumbnailSize: CGSize = CGSize(width: 120, height: 90)
-
-    var body: some View {
-        Text("Ola")
-    }
     
-    func calculateFontSize(screenSize: CGSize) -> CGFloat {
-        let baseFontSize: CGFloat = 8 // Tamanho base para a fonte
-        let scaleFactor: CGFloat = 0.02 // Fator de escalonamento para ajustar o tamanho da fonte com base na tela
-        
-        // Use o menor entre a largura e a altura para o escalonamento para garantir que a fonte se ajuste bem em ambas as dimensões
-        let scalingDimension = min(screenSize.width, screenSize.height)
-        
-        // Calcule o tamanho da fonte ajustado
-        let adjustedFontSize = baseFontSize + (scalingDimension * scaleFactor)
-        
-        return adjustedFontSize
+    @EnvironmentObject var store: AppStore
+    
+    var model: IdeaPosition
+    var isSelected: Bool
+    var fontSize: CGFloat
+    var onSelected: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            Text("IDEA: \(model.idea)")
+                .font(.system(size: fontSize, weight: .bold))
+                .padding()
+                .frame(width: 500)
+                .foregroundColor(.appBlack)
+                .background(Color.appYellow)
+                .padding(.top, 0)
+            
+            Text(model.explanation)
+                .font(.system(size: fontSize * 0.85, weight: .medium))
+                .padding()
+                .foregroundColor(.appYellow)
+                .frame(width: 500)
+            Spacer()
+            
+        }
+        .frame(width: 500, height: 220)
+        .opacity(model.isVisible ? 1 : 0)
+        .animation(.easeInOut(duration: 1), value: model.isVisible)
+        .onTapGesture {
+            onSelected()
+            withAnimation {
+                self.model.isVisible.toggle()
+//                store.dispatch()
+            }
+        }
+        .background(Color.appBlack)
+        .overlay(
+            RoundedRectangle(cornerRadius: 4)
+                .inset(by: 0.5)
+                .stroke(Color.appYellow, lineWidth: 1)
+            
+        )
     }
 }
 
-// Supondo que VideoPosition seja uma estrutura que você já tenha definido.
+#Preview {
+    IdeaView(model: IdeaPosition(idea: "Teste", explanation: "Music, a universal language that transcends borders and connects people across cultures, has always been a powerful medium for expression and creativity. As the world continues to evolve, so does the way we..", relativeX: 0, relativeY: 0), isSelected: false, fontSize: 16) {
+        print("sla")
+    }
+}
 

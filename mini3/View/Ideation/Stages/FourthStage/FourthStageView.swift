@@ -7,10 +7,10 @@ struct FourthStageView: View {
     @State private var inputText: String = ""
     @State private var errorMessage: String?
     @State private var error : Bool = false
-    @State var color : Color
+    @State var color : Color = .appYellow
     @Binding var circleSize: CGFloat
     @State var positions: [CGPoint] = []
-    private let youtubeService = YoutubeService.shared
+    private let chatGPTService = GPTService.shared
     
     
     var body: some View {
@@ -21,55 +21,43 @@ struct FourthStageView: View {
                     .overlay {
                         Circle()
                             .stroke(color, lineWidth: geometry.size.width * 0.002)
-                            
+                        
                     }
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
-
+                
                 // MARK: - Appearing Videos
-                ForEach((store.state.currentProject?.appearingVideos ?? []).filter { !(store.state.currentProject?.selectedVideos ?? []).contains($0)}) { videoPosition in
-                    YoutubeView(video: videoPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size), screenSize: geometry.size, onSelected: {
-                            //Touch
-                            fetchVideos(with: videoPosition.title, geometry: geometry)
-                    })
-                    .animation(.easeInOut(duration: 1), value: videoPosition.isVisible)
+                ForEach(store.state.currentProject?.appearingIdeas ?? []) { ideaPosition in
+                    IdeaView(model: ideaPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size)) {
+                        print("selected")
+                    }
+                    .animation(.easeInOut(duration: 1), value: ideaPosition.isVisible)
                     .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            if !(store.state.currentProject?.selectedVideos ?? []).contains(videoPosition) {
-                                withAnimation(.easeOut(duration: 1)) {
-                                    videoPosition.isVisible = false
-                                }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
+                            withAnimation(.easeOut(duration: 1)) {
+                                ideaPosition.isVisible = false
+                                
                             }
                         }
                     }
-                    .position(x: videoPosition.relativeX * geometry.size.width,
-                              y: videoPosition.relativeY * geometry.size.height)
+                    .position(x: ideaPosition.relativeX * geometry.size.width,
+                              y: ideaPosition.relativeY * geometry.size.height)
                 }
                 
-                
-                
-                
-                // MARK: - Selected Concepts
-                ForEach((store.state.currentProject?.selectedVideos ?? [])) { videoPosition in
-                    YoutubeView(
-                        video: videoPosition, isSelected: true, fontSize: calculateFontSize(screenSize: geometry.size), screenSize: geometry.size,
-                        onSelected: {
-                            print("deselect")
-                            withAnimation(.easeOut(duration: 1)){
-                                store.dispatch(.hideVideo(videoPosition))
-                            }
-                        })
-                    .position(x: videoPosition.relativeX * geometry.size.width,
-                              y: videoPosition.relativeY * geometry.size.height)
-                }
+            
                 
                 // MARK: - Input Concept
                 TextView(color: color, geometry: geometry, onSend: { text in
                     inputText = text
-                    fetchVideos(with: inputText, geometry: geometry)
+//                    fetchVideos(with: inputText, geometry: geometry)
                     inputText = ""
                 }, placeholder: "...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
+            }
+            .onChange(of: store.state.currentProject?.currentStage) { oldValue, newValue in
+                if newValue == IdeationStage.ideas {
+                    fetchIdeas(with: "", geometry: geometry)
+                }
             }
         }
         .alert(isPresented: $error, content: {
@@ -78,50 +66,59 @@ struct FourthStageView: View {
     }
     
     // Testando outra altenativa de posicionar
-    private func positionForIndex(_ index: Int, total: Int, startAngle: CGFloat = 0, screenSize: CGSize) -> CGPoint {
-        let angle = (2 * .pi / CGFloat(total)) * CGFloat(index) + startAngle
-        return CGPoint(x: (circleSize / 2) * cos(angle) + screenSize.width / 2,
-                       y: (circleSize / 2) * sin(angle) + screenSize.height / 2)
-    }
-    
-    
-    private func fetchVideos(with searchQuery: String, geometry: GeometryProxy) {
-        youtubeService.fetch(using: searchQuery) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let items):
+        
+
+    private func fetchIdeas(with concept: String, geometry: GeometryProxy) {
+        let system = chatGPTService.createMessage(withRole: "system", content: Secrets.PROMPT_2)
+        guard let conceptPositions = store.state.currentProject?.selectedConcepts else { return }
+        guard let videos = store.state.currentProject?.selectedVideos else { return }
+        
+        let concepts = chatGPTService.createMessage(
+            withRole: "user",
+            content: "concepts: \(conceptPositions.map { $0.content }.joined(separator: ","))")
+        let videosTitle = chatGPTService.createMessage(
+            withRole: "user",
+            content: "videos Titles: \(videos.map { $0.title }.joined(separator: ","))")
+        
+        let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
+        
+        chatGPTService.chatGPT(messages: [system, concepts, videosTitle, message]) { result in
+            print(result)
+            switch result {
+            case .success(let result):
+                let gptConcepts = chatGPTService.convertToIdeaResponses(from: result)
+                print(gptConcepts)
+                switch gptConcepts {
+                case .success(let jsonConcepts):
                     var delay = 0.0
-                    for item in items {
+                    for ideaPosition in jsonConcepts {
                         delay += 1
-                        let pos = generateNonOverlappingPosition(screenSize: geometry.size, fontSize: calculateFontSize(screenSize: geometry.size))
-                        let video = item.toSimpleVideo()
-                        video.relativeX = pos.x
-                        video.relativeY = pos.y
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
-//                                store.dispatch(.showVideo(video))
-                                handleVideoAppearance(videoPosition: video)
+//                                let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
+//                                store.dispatch(.showConcept(conceptPosition))
+                                
+                                handleConceptAppearance(ideaPosition: IdeaPosition(idea: ideaPosition.idea, explanation: ideaPosition.explain, relativeX: 0, relativeY: 0))
                             }
                         }
                     }
                 case .failure(let error):
-                    print(error)
-                    self.errorMessage = error.localizedDescription
-                    self.error = true
+                    print("JSON to string error: \(error)")
                 }
+            case .failure(let error):
+                print("API call error: \(error)")
             }
         }
     }
     
-
-    private func handleVideoAppearance(videoPosition: VideoPosition) {
-        if !(store.state.currentProject?.selectedVideos.contains(videoPosition) ?? false) {
-            store.dispatch(.showVideo(videoPosition))
-            videoPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
+    private func handleConceptAppearance(ideaPosition: IdeaPosition) {
+        if !(store.state.currentProject?.finalIdea == ideaPosition) {
+            store.dispatch(.showIdea(ideaPosition))
+            ideaPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
                 .autoconnect()
                 .sink { _ in
-                    if !(store.state.currentProject?.selectedVideos.contains(videoPosition) ?? false) {
-                        store.dispatch(.hideVideo(videoPosition))
+                    if !(store.state.currentProject?.finalIdea == ideaPosition) {
+                        store.dispatch(.hideIdea(ideaPosition))
                     }
                 }
         }
@@ -183,7 +180,7 @@ struct FourthStageView: View {
             }
         }
         // Se todas as tentativas falharem, retorne uma posição padrão (centro, por exemplo)
-        return CGPoint(x: 0.5, y: 0.5)
+        return CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
     }
 
 }

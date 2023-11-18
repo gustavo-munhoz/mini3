@@ -3,7 +3,7 @@ import Foundation
 import Combine
 import AppKit
 
-class VideoPosition: Identifiable, ObservableObject, Equatable, Positionable, Codable{
+class VideoPosition: Identifiable, ObservableObject, Equatable, Codable{
     static func == (lhs: VideoPosition, rhs: VideoPosition) -> Bool {
         lhs.videoURL == rhs.videoURL
     }

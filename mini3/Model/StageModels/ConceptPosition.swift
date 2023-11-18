@@ -3,7 +3,7 @@ import Foundation
 import Combine
 import AppKit
 
-class ConceptPosition: Identifiable, ObservableObject, Equatable, Positionable, Codable {
+class ConceptPosition: Identifiable, ObservableObject, Equatable, Codable {
     static func == (lhs: ConceptPosition, rhs: ConceptPosition) -> Bool {
         return lhs.id == rhs.id
     }
