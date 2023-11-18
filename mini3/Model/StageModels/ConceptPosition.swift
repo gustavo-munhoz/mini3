@@ -1,24 +1,27 @@
 import SwiftUI
-import Foundation
 import Combine
-import AppKit
 
-class ConceptPosition: Identifiable, ObservableObject, Equatable, Positionable, Codable {
+class ConceptPosition: Identifiable, ObservableObject, Equatable, Codable {
     static func == (lhs: ConceptPosition, rhs: ConceptPosition) -> Bool {
         return lhs.id == rhs.id
     }
     let id = UUID()
     var content: String
-    var relativeX: Double
-    var relativeY: Double
-    var isVisible: Bool = true
+    var relativeX: Double = 0.5
+    var relativeY: Double = 0.5
+    var isVisible: Bool = false
+    var isPositioned: Bool = false
     var cancellable: AnyCancellable?
 
-    init(word: String, relativeX: Double, relativeY: Double, appearDelay: TimeInterval = 0) {
+    init(word: String, appearDelay: TimeInterval = 0) {
         self.content = word
+    }
+    
+    func setPosition(relativeX: Double, relativeY: Double) {
         self.relativeX = relativeX
         self.relativeY = relativeY
     }
+    
     enum CodingKeys: CodingKey {
         case content, relativeX, relativeY, isVisible
     }
@@ -39,4 +42,3 @@ class ConceptPosition: Identifiable, ObservableObject, Equatable, Positionable, 
         try container.encode(isVisible, forKey: .isVisible)
     }
 }
-
