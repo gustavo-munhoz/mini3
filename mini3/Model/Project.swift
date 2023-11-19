@@ -22,7 +22,7 @@ class Project/*: Codable, Identifiable*/ {
     var selectedVideos: [VideoPosition] = []
     
     var appearingIdeas : [IdeaPosition] = []
-    var finalIdea: IdeaPosition?
+    var finalIdea: [IdeaPosition] = []
     
     var specificThemes: [String]
     var referenceLinks: [String]
@@ -32,7 +32,7 @@ class Project/*: Codable, Identifiable*/ {
     init(id: Int, name: String = "New Project", currentStage: IdeationStage = .words,
          selectedWords: [WordPosition] = [], specificThemes: [String] = [],
          referenceLinks: [String] = [], contentIdeas: [String] = [],
-         finalIdea: IdeaPosition? = nil)
+         finalIdea: [IdeaPosition] = [])
     {
         self.id = id
         self.name = name
@@ -58,7 +58,7 @@ extension Project {
         record["specificThemes"] = specificThemes as CKRecordValue
         record["referenceLinks"] = referenceLinks as CKRecordValue
         record["contentIdeas"] = contentIdeas as CKRecordValue
-//        record["finalIdea"] = finalIdea as CKRecordValue?
+        record["finalIdea"] = finalIdea as CKRecordValue
         return record
     }
     
@@ -69,13 +69,14 @@ extension Project {
               let selectedWordsData = record["generalThemes"] as? Data,
               let specificThemes = record["specificThemes"] as? [String],
               let referenceLinks = record["referenceLinks"] as? [String],
-              let contentIdeas = record["contentIdeas"] as? [String]
+              let contentIdeas = record["contentIdeas"] as? [String],
+              let finalIdea = record["finalIdea"] as? [IdeaPosition]
         else {
             return nil
         }
         
         let stage = IdeationStage(rawValue: rawStage) ?? .words
-        let finalIdea = record["finalIdea"] as? IdeaPosition
+
         
         let selectedWords = (try? JSONDecoder().decode([WordPosition].self, from: selectedWordsData)) ?? []
         

@@ -71,21 +71,26 @@ struct ThirdStageView: View {
                 }, placeholder: "...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
             }
+            .onChange(of: store.state.currentProject?.currentStage) { oldValue, newValue in
+                if newValue == IdeationStage.references {
+                    guard let concepts = store.state.currentProject?.selectedConcepts else { return }
+                    for concept in concepts {
+                        fetchVideos(with: concept.content, geometry: geometry)
+                    }
+                    
+                }
+            }
         }
         .alert(isPresented: $error, content: {
             Alert(title: Text("Erro"), message: Text(errorMessage ?? "Erro desconhecido"), dismissButton: .default(Text("OK")))
         })
     }
     
-    // Testando outra altenativa de posicionar
-    private func positionForIndex(_ index: Int, total: Int, startAngle: CGFloat = 0, screenSize: CGSize) -> CGPoint {
-        let angle = (2 * .pi / CGFloat(total)) * CGFloat(index) + startAngle
-        return CGPoint(x: (circleSize / 2) * cos(angle) + screenSize.width / 2,
-                       y: (circleSize / 2) * sin(angle) + screenSize.height / 2)
-    }
-    
     
     private func fetchVideos(with searchQuery: String, geometry: GeometryProxy) {
+        
+        
+        
         youtubeService.fetch(using: searchQuery) { result in
             DispatchQueue.main.async {
                 switch result {
