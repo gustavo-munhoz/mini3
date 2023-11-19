@@ -28,13 +28,19 @@ struct FourthStageView: View {
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 
                 // MARK: - Appearing Ideas
-                ForEach(store.state.currentProject?.appearingIdeas ?? []) { ideaPosition in
-                    IdeaView(model: ideaPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size)) {
-                        store.dispatch(.selectIdea(ideaPosition))
+                ForEach((store.state.currentProject?.appearingIdeas ?? []).filter { !(store.state.currentProject?.finalIdea ?? []).contains($0)}) { ideaPosition in
+                    
+                    IdeaView(model: ideaPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size)){
+                        withAnimation(.easeIn(duration: 1)){
+//                            store.dispatch(.selectIdea(ideaPosition))
+                            if (store.state.currentProject?.appearingIdeas.count ?? 0) <= 4 {
+                                fetchIdeas(with: ideaPosition.idea , geometry: geometry)
+                            }
+                        }
                     }
                     .onAppear {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                            if !(store.state.currentProject?.finalIdea == ideaPosition) {
+                            if !(store.state.currentProject?.finalIdea ?? []).contains(ideaPosition) {
                                 withAnimation(.easeOut(duration: 1)) {
                                     ideaPosition.isVisible = false
                                 }
@@ -55,13 +61,24 @@ struct FourthStageView: View {
                     .position(x: ideaPosition.relativeX * geometry.size.width,
                               y: ideaPosition.relativeY * geometry.size.height)
                     .opacity(ideaPosition.isVisible ? 1 : 0)
+                    .animation(.easeInOut(duration: 1), value: ideaPosition.isVisible)
                 }
             
+                // MARK: - Selected Concepts
+                ForEach((store.state.currentProject?.finalIdea ?? [])) { ideaPosition in
+                    IdeaView(model: ideaPosition, isSelected: true, fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
+                        withAnimation {
+                            store.dispatch(.selectIdea(ideaPosition))
+                        }
+                    })
+                    .position(x: ideaPosition.relativeX * geometry.size.width,
+                              y: ideaPosition.relativeY * geometry.size.height)
+                }
                 
                 // MARK: - Input Concept
                 TextView(color: color, geometry: geometry, onSend: { text in
                     inputText = text
-//                    fetchVideos(with: inputText, geometry: geometry)
+                    fetchIdeas(with: inputText, geometry: geometry)
                     inputText = ""
                 }, placeholder: "...")
                 .position(CGPoint(x: geometry.size.width / 2, y: geometry.size.height * 0.01))
@@ -119,12 +136,12 @@ struct FourthStageView: View {
     }
     
     private func handleConceptAppearance(ideaPosition: IdeaPosition) {
-        if !(store.state.currentProject?.finalIdea == ideaPosition) {
+        if !(store.state.currentProject?.finalIdea.contains(ideaPosition) ?? false) {
             store.dispatch(.showIdea(ideaPosition))
             ideaPosition.cancellable = Timer.publish(every: 8, on: .main, in: .common)
                 .autoconnect()
                 .sink { _ in
-                    if !(store.state.currentProject?.finalIdea == ideaPosition) {
+                    if !(store.state.currentProject?.finalIdea.contains(ideaPosition) ?? false) {
                         store.dispatch(.hideIdea(ideaPosition))
                     }
                 }
