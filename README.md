@@ -1,5 +1,5 @@
 
-# MUSE - O Assistente para Criadores de Conteúdo
+# MUSE: Worry Less, Amuse More
 
 
 ## Sobre o Projeto
@@ -29,7 +29,7 @@ As demais etapas estão atualmente em desenvolvimento e serão lançadas em atua
 MUSE está disponível para download na App Store. Visite a página do aplicativo para mais informações sobre instalação, uso, contato e licenciamento.
 
 ```bash
-# Busque por 'MUSE - O Assistente para Criadores de Conteúdo' na App Store
+# Busque por 'MUSE: Worry Less, Amuse More' na App Store
 ```
 
 ## Contato e Licença
