@@ -10,6 +10,7 @@ class IdeaPosition: Codable, Identifiable, Equatable {
     var relativeX: Double
     var relativeY: Double
     var isVisible: Bool = true
+    var isPositioned: Bool = false
     var cancellable: AnyCancellable?
 
     var idea: String
@@ -18,6 +19,11 @@ class IdeaPosition: Codable, Identifiable, Equatable {
     init(idea: String, explanation: String, relativeX: Double, relativeY: Double) {
         self.idea = idea
         self.explanation = explanation
+        self.relativeX = relativeX
+        self.relativeY = relativeY
+    }
+    
+    func setPosition(relativeX: Double, relativeY: Double) {
         self.relativeX = relativeX
         self.relativeY = relativeY
     }

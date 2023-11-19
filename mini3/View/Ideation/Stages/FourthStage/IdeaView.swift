@@ -11,30 +11,30 @@ struct IdeaView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Text("IDEA: \(model.idea)")
-                .font(.system(size: fontSize, weight: .bold))
+            Text("\(model.idea)")
+                .font(.system(size: fontSize * 0.6, weight: .bold))
                 .padding()
-                .frame(width: 500)
+                .frame(width: 450)
                 .foregroundColor(.appBlack)
                 .background(Color.appYellow)
                 .padding(.top, 0)
             
             Text(model.explanation)
-                .font(.system(size: fontSize * 0.85, weight: .medium))
+                .font(.system(size: fontSize * 0.45, weight: .medium))
                 .padding()
                 .foregroundColor(.appYellow)
-                .frame(width: 500)
+                .frame(width: 450)
             Spacer()
             
         }
-        .frame(width: 500, height: 220)
+        .frame(width: 450, height: 198)
         .opacity(model.isVisible ? 1 : 0)
         .animation(.easeInOut(duration: 1), value: model.isVisible)
         .onTapGesture {
             onSelected()
             withAnimation {
                 self.model.isVisible.toggle()
-//                store.dispatch()
+                store.dispatch(.selectIdea(self.model))
             }
         }
         .background(Color.appBlack)

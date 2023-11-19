@@ -4,6 +4,7 @@ import Combine
 struct FourthStageView: View {
     @EnvironmentObject var store: AppStore
     
+    @State private var ideaViewSizes: [UUID: CGSize] = [:]
     @State private var inputText: String = ""
     @State private var errorMessage: String?
     @State private var error : Bool = false
@@ -26,24 +27,35 @@ struct FourthStageView: View {
                     .frame(width: circleSize, height: circleSize)
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 
-                // MARK: - Appearing Videos
+                // MARK: - Appearing Ideas
                 ForEach(store.state.currentProject?.appearingIdeas ?? []) { ideaPosition in
                     IdeaView(model: ideaPosition, isSelected: false, fontSize: calculateFontSize(screenSize: geometry.size)) {
-                        print("selected")
+                        store.dispatch(.selectIdea(ideaPosition))
                     }
-                    .animation(.easeInOut(duration: 1), value: ideaPosition.isVisible)
                     .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 20) {
-                            withAnimation(.easeOut(duration: 1)) {
-                                ideaPosition.isVisible = false
-                                
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                            if !(store.state.currentProject?.finalIdea == ideaPosition) {
+                                withAnimation(.easeOut(duration: 1)) {
+                                    ideaPosition.isVisible = false
+                                }
                             }
                         }
                     }
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.onAppear {
+                                let size = geo.size
+                                ideaViewSizes[ideaPosition.id] = size
+                                if !ideaPosition.isPositioned {
+                                    positionIdeaView(ideaPosition, screenSize: geometry.size, ideaPositions: store.state.currentProject?.appearingIdeas ?? [], size: size)
+                                }
+                            }
+                        }
+                    )
                     .position(x: ideaPosition.relativeX * geometry.size.width,
                               y: ideaPosition.relativeY * geometry.size.height)
+                    .opacity(ideaPosition.isVisible ? 1 : 0)
                 }
-                
             
                 
                 // MARK: - Input Concept
@@ -65,7 +77,6 @@ struct FourthStageView: View {
         })
     }
     
-    // Testando outra altenativa de posicionar
         
 
     private func fetchIdeas(with concept: String, geometry: GeometryProxy) {
@@ -83,7 +94,6 @@ struct FourthStageView: View {
         let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
         
         chatGPTService.chatGPT(messages: [system, concepts, videosTitle, message]) { result in
-            print(result)
             switch result {
             case .success(let result):
                 let gptConcepts = chatGPTService.convertToIdeaResponses(from: result)
@@ -95,9 +105,6 @@ struct FourthStageView: View {
                         delay += 1
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             withAnimation(.easeIn(duration: 1)) {
-//                                let conceptPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: concept, fontSize: calculateFontSize(screenSize: geometry.size))
-//                                store.dispatch(.showConcept(conceptPosition))
-                                
                                 handleConceptAppearance(ideaPosition: IdeaPosition(idea: ideaPosition.idea, explanation: ideaPosition.explain, relativeX: 0, relativeY: 0))
                             }
                         }
@@ -136,51 +143,59 @@ struct FourthStageView: View {
         
         return adjustedFontSize
     }
-    func randomPointInCircle(center: CGPoint, radius: CGFloat) -> CGPoint {
-        let angle = CGFloat.random(in: 0..<2 * .pi)
-        let randomRadius = CGFloat.random(in: 0..<radius)
-        return CGPoint(
-            x: center.x + randomRadius * cos(angle),
-            y: center.y + randomRadius * sin(angle)
-        )
-    }
-    func rectangleAroundString(at point: CGPoint, for word: String, with fontSize: CGFloat) -> CGRect {
-        let estimatedWidth = CGFloat(word.count) * fontSize// Ajuste conforme a fonte
-        let estimatedHeight = fontSize// Ajuste conforme a fonte
-        let rect = CGRect(x: point.x - estimatedWidth / 2, y: point.y - estimatedHeight / 2, width: estimatedWidth, height: estimatedHeight)
-        return rect
-    }
-    func isRectangleInsideCircle(_ rect: CGRect, inCircle center: CGPoint, radius: CGFloat) -> Bool {
-        // Encontrar o ponto no retângulo mais distante do centro do círculo
-        let furthestPoint = CGPoint(
-            x: max(abs(rect.minX - center.x), abs(rect.maxX - center.x)),
-            y: max(abs(rect.minY - center.y), abs(rect.maxY - center.y))
-        )
+    
+    func randomPointInCircle(center: CGPoint, radius: CGFloat, maxX: CGFloat, maxY: CGFloat) -> CGPoint {
+        var randomPoint: CGPoint
         
-        // Calcular a distância desse ponto ao centro
-        let distanceToFurthestPoint = sqrt(pow(furthestPoint.x, 2) + pow(furthestPoint.y, 2))
-        
-        // Se a distância for menor que o raio, então o retângulo está dentro do círculo
-        return distanceToFurthestPoint <= radius
+        repeat {
+            let angle = CGFloat.random(in: 0..<2 * .pi)
+            let randomRadius = CGFloat.random(in: 0..<radius)
+            randomPoint = CGPoint(
+                x: center.x + randomRadius * cos(angle),
+                y: center.y + randomRadius * sin(angle)
+            )
+        } while randomPoint.x > maxX || randomPoint.y < maxY
+        return randomPoint
     }
-    func doRectanglesOverlap(_ rect1: CGRect, _ rect2: CGRect) -> Bool {
-        print(rect1.intersects(rect2))
-        return rect1.intersects(rect2)
-    }
-    func generateNonOverlappingPosition(screenSize: CGSize, fontSize: CGFloat) -> CGPoint {
-        let circleCenter = CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
-        let circleRadius = circleSize / 2
 
-        // Tente encontrar uma posição não sobreposta um número limitado de vezes
-        for _ in 0..<100000 {
-            let randomPoint = randomPointInCircle(center: circleCenter, radius: circleRadius)
-            if !positions.contains(randomPoint) {
-                self.positions.append(CGPoint(x: randomPoint.x / screenSize.width, y: randomPoint.y / screenSize.height))
-                return CGPoint(x: randomPoint.x / screenSize.width, y: randomPoint.y / screenSize.height)
+    
+    
+    func positionIdeaView(_ ideaPosition: IdeaPosition, screenSize: CGSize, ideaPositions: [IdeaPosition], size: CGSize) {
+        while true {
+            // Gerar posição aleatória
+            let maxX = screenSize.width * 0.75 // 80% da largura da tela
+            let maxY = screenSize.height * 0.20
+
+            let randomPoint = randomPointInCircle(center: CGPoint(x: screenSize.width / 2, y: screenSize.height / 2), radius: screenSize.width / 2, maxX: maxX, maxY: maxY)
+
+            let conceptRect = CGRect(x: randomPoint.x, y: randomPoint.y, width: size.width, height: size.height)
+            
+            // Verificar se há sobreposição
+            var hasOverlap = false
+            for otherConcept in ideaPositions where otherConcept !== ideaPosition {
+                if let otherSize = ideaViewSizes[otherConcept.id] {
+                    let otherRect = CGRect(x: otherConcept.relativeX * screenSize.width, y: otherConcept.relativeY * screenSize.height, width: otherSize.width, height: otherSize.height)
+                    if conceptRect.intersects(otherRect) {
+                        hasOverlap = true
+                        break
+                    }
+                }
+            }
+            
+            if !hasOverlap {
+                // Atualizar posição se não houver sobreposição
+                ideaPosition.setPosition(relativeX: randomPoint.x / screenSize.width, relativeY: randomPoint.y / screenSize.height)
+                ideaPosition.isPositioned = true
+                break
             }
         }
-        // Se todas as tentativas falharem, retorne uma posição padrão (centro, por exemplo)
-        return CGPoint(x: screenSize.width / 2, y: screenSize.height / 2)
+        
+        DispatchQueue.main.async {
+            withAnimation {
+                ideaPosition.isVisible = true
+            }
+        }
     }
+    
 
 }

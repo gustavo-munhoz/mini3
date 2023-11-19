@@ -108,7 +108,6 @@ struct SecondStageView: View {
         let message = chatGPTService.createMessage(withRole: "user", content: "sentence: \(concept)")
         
         chatGPTService.chatGPT(messages: [system, words, message]) { result in
-            print(result)
             switch result {
             case .success(let result):
                 let gptConcepts = chatGPTService.extractConcepts(from: result)
@@ -176,31 +175,7 @@ struct SecondStageView: View {
         return randomPoint
     }
 
-    
-    func rectangleAroundString(at point: CGPoint, for word: String, with fontSize: CGFloat) -> CGRect {
-        let estimatedWidth = CGFloat(word.count) * fontSize// Ajuste conforme a fonte
-        let estimatedHeight = fontSize// Ajuste conforme a fonte
-        let rect = CGRect(x: point.x - estimatedWidth / 2, y: point.y - estimatedHeight / 2, width: estimatedWidth, height: estimatedHeight)
-        return rect
-    }
-    func isRectangleInsideCircle(_ rect: CGRect, inCircle center: CGPoint, radius: CGFloat) -> Bool {
-        // Encontrar o ponto no retângulo mais distante do centro do círculo
-        let furthestPoint = CGPoint(
-            x: max(abs(rect.minX - center.x), abs(rect.maxX - center.x)),
-            y: max(abs(rect.minY - center.y), abs(rect.maxY - center.y))
-        )
-        
-        // Calcular a distância desse ponto ao centro
-        let distanceToFurthestPoint = sqrt(pow(furthestPoint.x, 2) + pow(furthestPoint.y, 2))
-        
-        // Se a distância for menor que o raio, então o retângulo está dentro do círculo
-        return distanceToFurthestPoint <= radius
-    }
-    
-    func doRectanglesOverlap(_ rect1: CGRect, _ rect2: CGRect) -> Bool {
-        print(rect1.intersects(rect2))
-        return rect1.intersects(rect2)
-    }
+
     
     func positionConceptView(_ conceptPosition: ConceptPosition, screenSize: CGSize, conceptViews: [ConceptPosition], size: CGSize) {
         while true {

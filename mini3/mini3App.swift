@@ -21,7 +21,7 @@ struct mini3App: App {
         WindowGroup {
             ContentView()
                 .aspectRatio(16/9, contentMode: .fit)
-                .frame(minWidth: 1920, minHeight: 1080)
+//                .frame(minWidth: 1920, minHeight: 1080)
                 .onAppear {
                     store.dispatch(.checkiCloudAccountStatus)
                 }
