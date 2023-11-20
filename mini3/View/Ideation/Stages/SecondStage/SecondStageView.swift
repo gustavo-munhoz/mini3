@@ -31,6 +31,7 @@ struct SecondStageView: View {
                                 onSelected: {
                         withAnimation(.easeIn(duration: 1)){
                             store.dispatch(.selectConcept(conceptPosition))
+                            store.dispatch(.updateProject(store.state.currentProject!))
                             if (store.state.currentProject?.appearingConcepts.count ?? 0) <= 10 {
                                 fetchConcepts(with: conceptPosition.content, geometry: geometry)
                             }
@@ -70,6 +71,7 @@ struct SecondStageView: View {
                         fontSize: calculateFontSize(screenSize: geometry.size), onSelected: {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectConcept(conceptPosition))
+                                store.dispatch(.updateProject(store.state.currentProject!))
                             }
                         })
                     .position(x: conceptPosition.relativeX * geometry.size.width,
@@ -82,6 +84,7 @@ struct SecondStageView: View {
                     let newConceptPosition = ConceptPosition(word: text)
                     if !inputText.isEmpty {
                         store.dispatch(.selectConcept(newConceptPosition))
+                        store.dispatch(.updateProject(store.state.currentProject!))
                     }
                     fetchConcepts(with: inputText, geometry: geometry)
                     inputText = ""

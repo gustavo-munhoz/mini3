@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CloudKit
 
 typealias Reducer<State, Action> = (State, Action) -> State
 
@@ -52,11 +53,6 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         }
     
     // MARK: - Goals
-    case .createNewGoal:
-        if let user = newState.user {
-            user.goals.append(Goal(id: user.goals.count + 1, content: "New motivation"))
-        }
-        
     case .updateGoalContent(let goal, let string):
         guard let user = newState.user else { break }
         user.goals.first(where: { $0.id == goal.id })?.content = string
@@ -96,22 +92,12 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
             .date(byAdding: .month, value: -1, to: newState.currentDate) ?? newState.currentDate
         
     // MARK: Projects
-    case .createNewProject:
-        if let user = newState.user {
-            if newState.onboardingState != .finished {
-                if newState.user?.projects.count == 1 {
-                    break
-                }
-            }
-        
-            user.projects.append(Project(id: user.projects.count + 1))
-        }
-        
     case .increaseIndex:
         newState.currentProject?.currentStage.changeStage(by: 1)
     
     case .decreaseIndex:
         newState.currentProject?.currentStage.changeStage(by: -1)
+        
     case .updateProjectTitle(let project, let newTitle):
         guard let user = newState.user else { break }
         user.projects.first(where: {$0.id == project.id})?.name = newTitle
@@ -121,7 +107,7 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
         user.projects.removeAll(where: { $0.id == project.id })
 
     // MARK: - Text View
-    case.show(let isHidden):
+    case .show(let isHidden):
         if isHidden{
             newState.isHiddenText = true
         } else {

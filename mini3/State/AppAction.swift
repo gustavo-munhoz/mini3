@@ -26,12 +26,18 @@ enum AppAction {
     // MARK: Profile
     case expandProfileModal
     case setUIColor(Color)
+    case updateUserPreferences(preferredColor: String, avatar: String)
+    case userPreferencesUpdatedSuccessfully
     
     // MARK: Goals
-    case createNewGoal
+    case createNewGoal(String)
     case updateGoalContent(Goal, String)
     case toggleGoalCompletion(Int)
     case deleteGoal(Goal)
+    case goalCreated(Goal)
+    case updateGoal(Goal)
+    case goalCreatedSuccessfully(Goal)
+    case goalUpdatedSuccessfully(Goal)
     
     // MARK: Navigation
     case navigateToView(ViewState)
@@ -45,7 +51,9 @@ enum AppAction {
     case updateProjectTitle(Project, String)
     case deleteProject(Project)
     case projectCreated(Project)
+    case updateProject(Project)
     case projectSavedSuccessfully(Project)
+    case projectUpdatedSuccessfully(Project)
     case increaseIndex
     case decreaseIndex
 

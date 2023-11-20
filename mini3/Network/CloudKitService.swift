@@ -61,48 +61,62 @@ class CloudKitService {
     
     // MARK: User-related methods
     
-    func fetchUser(fullName: String, completion: @escaping (Result<User, Error>) -> Void) {
+    func fetchUser(completion: @escaping (Result<User, Error>) -> Void) {
         let predicate = NSPredicate(value: true)
         let query = CKQuery(recordType: "UserPreferences", predicate: predicate)
         let dispatchGroup = DispatchGroup()
 
         var fetchedProjects = [Project]()
         var fetchedGoals = [Goal]()
-        var fetchedFullName = fullName
         var fetchedPreferredColor = "AppPurple"
+        var fetchedAvatar = "Avatar1"
 
         dispatchGroup.enter()
         privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 1) { result in
             switch result {
             case .failure(let error as NSError):
-                if error.domain == CKErrorDomain, error.code == CKError.unknownItem.rawValue {
-                    self.createUserPreferencesAndAssociatedData(fullName: fullName) { result in
+                if error.domain == CKErrorDomain, error.code == CKError.unknownItem.rawValue || error.code == CKError.limitExceeded.rawValue {
+                    self.createUserPreferencesAndAssociatedData() { result in
                         switch result {
                         case .success(let newUser):
                             completion(.success(newUser))
-                            print("- User record created: \(newUser.fullName)")
-                            
+                            print("- User record created.")
                         case .failure(let error):
                             completion(.failure(error))
                             print("<> Error creating user record: \(error.localizedDescription)")
                         }
-                        dispatchGroup.leave()
                     }
                 } else {
                     completion(.failure(error))
                     print("<!> Unknown error: \(error.localizedDescription)")
-                    dispatchGroup.leave()
                 }
 
             case .success((let matchResults, _)):
-                if let record = try? matchResults.first?.1.get() {
-                    fetchedFullName = record["fullName"] as? String ?? fullName
+                if matchResults.isEmpty {
+                    // Não encontrou nenhum registro, cria um novo usuário
+                    self.createUserPreferencesAndAssociatedData() { result in
+                        switch result {
+                        case .success(let newUser):
+                            completion(.success(newUser))
+                            print("- User record created.")
+                        case .failure(let error):
+                            completion(.failure(error))
+                            print("<> Error creating user record: \(error.localizedDescription)")
+                        }
+                    }
+                } else if let record = try? matchResults.first?.1.get() {
+                    // Processa o registro encontrado
                     fetchedPreferredColor = record["preferredColor"] as? String ?? "AppPurple"
-                    print("- Fetched name and color: \(fetchedFullName), \(fetchedPreferredColor)")
+                    fetchedAvatar = record["avatar"] as? String ?? "Avatar1"
+                    let user = User(goals: fetchedGoals, projects: fetchedProjects, preferredColor: fetchedPreferredColor, avatar: fetchedAvatar)
+                    user.userPreferencesRecord = record // Armazenando o CKRecord
+                    completion(.success(user))
+                    print("- Fetched color and avatar: \(fetchedPreferredColor), \(fetchedAvatar)")
                     dispatchGroup.leave()
                 }
             }
         }
+
 
         dispatchGroup.enter()
         fetchProjects { result in
@@ -129,8 +143,7 @@ class CloudKitService {
         }
 
         dispatchGroup.notify(queue: .main) {
-            let user = User(fullName: fetchedFullName, goals: fetchedGoals, projects: fetchedProjects, preferredColor: fetchedPreferredColor)
-            print("- User created: \(fetchedFullName)")
+            let user = User(goals: fetchedGoals, projects: fetchedProjects, preferredColor: fetchedPreferredColor, avatar: fetchedAvatar)
             completion(.success(user))
         }
     }
@@ -171,45 +184,104 @@ class CloudKitService {
         }
     }
     
-    func createUserPreferencesAndAssociatedData(fullName: String, completion: @escaping (Result<User, Error>) -> Void) {
+    func createUserPreferencesAndAssociatedData(completion: @escaping (Result<User, Error>) -> Void) {
         // Criar e configurar o registro 'UserPreferences'
         let newUserPreferencesRecord = CKRecord(recordType: "UserPreferences")
-        newUserPreferencesRecord["fullName"] = fullName
         newUserPreferencesRecord["preferredColor"] = "AppPurple"
+        newUserPreferencesRecord["avatar"] = "Avatar1"
 
-        // Criar e configurar o registro 'Project'
-        let newProjectRecord = CKRecord(recordType: "Project")
-        // Configure os campos do projeto conforme necessário
-
-        // Criar e configurar o registro 'Goal'
-        let newGoalRecord = CKRecord(recordType: "Goal")
-        // Configure os campos da meta conforme necessário
 
         // Salvar os registros no CloudKit
-        let recordsToSave = [newUserPreferencesRecord, newProjectRecord, newGoalRecord]
+        let recordsToSave = [newUserPreferencesRecord]
         let saveOperation = CKModifyRecordsOperation(recordsToSave: recordsToSave, recordIDsToDelete: nil)
 
         saveOperation.modifyRecordsResultBlock = { savedRecords in
-            let user = User(fullName: fullName, goals: [], projects: [], preferredColor: "AppPurple")
+            let user = User(goals: [], projects: [], preferredColor: "AppPurple", avatar: "Avatar1")
+            user.userPreferencesRecord = newUserPreferencesRecord
             completion(.success(user))
         }
 
         privateDB.add(saveOperation)
     }
     
-    // MARK: Update data
-    
-    func saveProjectToCloudKit(project: Project) -> AnyPublisher<Void, Error> {
-        let record = project.record // Converter Project para CKRecord
-        
-        return Future<Void, Error> { promise in
-            let modifyOperation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
-            modifyOperation.savePolicy = .changedKeys
-            modifyOperation.modifyRecordsResultBlock = {_ in
-                promise(.success(()))
+    func fetchUserPreferencesRecord(completion: @escaping (Result<CKRecord, Error>) -> Void) {
+        let predicate = NSPredicate(value: true)
+        let query = CKQuery(recordType: "UserPreferences", predicate: predicate)
+
+        privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 1) { result in
+            switch result {
+            case .failure(let error):
+                completion(.failure(error))
+                
+            case .success((let matchResults, _)):
+                if let record = try? matchResults.first?.1.get() {
+                    completion(.success(record))
+                } else {
+                    completion(.failure(NSError(domain: "No UserPreferences record found", code: 0)))
+                }
             }
-            self.privateDB.add(modifyOperation)
+        }
+    }
+    
+    // MARK: Update data
+    static func createProject(_ project: Project) -> AnyPublisher<Void, Error> {
+        let record = project.record
+
+        return Future<Void, Error> { promise in
+            CKContainer.default().privateCloudDatabase.save(record) { _, error in
+                if let error = error {
+                    promise(.failure(error))
+                } else {
+                    promise(.success(()))
+                }
+            }
         }
         .eraseToAnyPublisher()
+    }
+    
+    static func createGoal(_ goal: Goal) -> AnyPublisher<Void, Error> {
+        let record = goal.record
+
+        return Future<Void, Error> { promise in
+            CKContainer.default().privateCloudDatabase.save(record) { _, error in
+                if let error = error {
+                    promise(.failure(error))
+                } else {
+                    promise(.success(()))
+                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+    
+    func updateUserPreferences(preferredColor: String, avatar: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        fetchUserPreferencesRecord { result in
+            switch result {
+            case .success(let record):
+                // Atualiza os valores
+                record["preferredColor"] = preferredColor
+                record["avatar"] = avatar
+                
+                // Reutiliza a função existente para salvar o registro
+                CloudKitService.saveUpdatedRecord(record, completion: completion)
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    static func saveUpdatedRecord(_ record: CKRecord, completion: @escaping (Result<Void, Error>) -> Void) {
+        let modifyOperation = CKModifyRecordsOperation(recordsToSave: [record], recordIDsToDelete: nil)
+        modifyOperation.savePolicy = .changedKeys
+        modifyOperation.modifyRecordsResultBlock = { result in
+            switch result {
+            case .success():
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        CKContainer.default().privateCloudDatabase.add(modifyOperation)
     }
 }

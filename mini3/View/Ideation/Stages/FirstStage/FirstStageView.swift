@@ -30,6 +30,7 @@ struct FirstStageView: View {
                                 onSelected: {
                                     withAnimation(.easeInOut(duration: 1)){
                                         store.dispatch(.selectWord(wordPosition))
+                                        store.dispatch(.updateProject(store.state.currentProject!))
                                         fetchRelatedWords(with: wordPosition.content, geometry: geometry)
                                     }
                                 })
@@ -56,6 +57,7 @@ struct FirstStageView: View {
                         onSelected: {
                             withAnimation(.easeOut(duration: 1)){
                                 store.dispatch(.selectWord(wordPosition))
+                                store.dispatch(.updateProject(store.state.currentProject!))
                             }
                         })
                     .position(x: wordPosition.relativeX * geometry.size.width,
@@ -69,6 +71,7 @@ struct FirstStageView: View {
                     let newWordPosition = generateNonOverlappingPosition(screenSize: geometry.size, word: inputWord, fontSize: calculateFontSize(screenSize: geometry.size))
                     if !inputWord.isEmpty {
                         store.dispatch(.selectWord(newWordPosition))
+                        store.dispatch(.updateProject(store.state.currentProject!))
                     }
                     fetchRelatedWords(geometry: geometry)
                     inputWord = ""

@@ -24,7 +24,7 @@ struct ProfileModal: View {
         ZStack {
             VStack(alignment: .leading, spacing: 32) {
                 HStack {
-                    Image("Profile")
+                    Image(store.state.user?.avatar ?? "Avatar1")
                         .resizable()
                         .scaledToFit()
                         .frame(width: geometry.size.width * 0.05)
@@ -73,6 +73,7 @@ struct ProfileModal: View {
                                     isSelected: store.state.uiColor == themeColor,
                                     action: {
                                         store.dispatch(.setUIColor(themeColor))
+                                        store.dispatch(.updateUserPreferences(preferredColor: themeColor.description.split(separator: "\"").map(String.init).dropFirst().first!, avatar: "Avatar1"))
                                     }
                                 )
                             }
