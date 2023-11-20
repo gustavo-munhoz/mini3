@@ -2,6 +2,7 @@ import SwiftUI
 
 struct IdeationView: View {
     @EnvironmentObject var store: AppStore
+    
     @State var project: Project
     @State private var currentIndex: Int = 0
     @GestureState private var dragOffset: CGFloat = 0
@@ -44,14 +45,14 @@ struct IdeationView: View {
                 }
                 
                 //Buttons
-//                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 && currentIndex == 0 || (store.state.currentProject?.selectedConcepts.count ?? 0) > 0 && currentIndex == 1 || (store.state.currentProject?.selectedVideos.count ?? 0) > 0 && currentIndex == 2  {
+                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 && currentIndex == 0 || (store.state.currentProject?.selectedConcepts.count ?? 0) > 0 && currentIndex == 1 || (store.state.currentProject?.selectedVideos.count ?? 0) > 0 && currentIndex == 2  {
                     HStack {
                         
                         Spacer()
                             .frame(width: geometry.size.width - 200, height: geometry.size.height / 2)
                         
                         Button(action: {
-                            withAnimation(.easeInOut(duration: 1.5)) {
+                            withAnimation(.easeInOut(duration: 0.8)) {
                                 store.dispatch(.increaseIndex)
                                 currentIndex = store.state.currentProject?.currentStage.rawValue ?? 0
 //                                print(store.state.currentProject?.currentStage.rawValue as Any)
@@ -69,7 +70,7 @@ struct IdeationView: View {
                         }
                     }
                     .foregroundColor(.white)
-//                }
+                }
             }
             .padding()
             .frame(width: geometry.size.width, height: geometry.size.height)

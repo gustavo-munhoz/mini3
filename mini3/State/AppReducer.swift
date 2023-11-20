@@ -172,10 +172,10 @@ let appReducer: Reducer<AppState, AppAction> = { state, action in
     // MARK: - Fourth Stage
     case .selectIdea(let ideaPosition):
         guard let project = newState.currentProject else { break }
-        if project.finalIdea == ideaPosition {
-            newState.currentProject?.finalIdea = IdeaPosition(idea: "", explanation: "", relativeX: 0, relativeY: 0)
+        if project.finalIdea.contains(ideaPosition) {
+            newState.currentProject?.finalIdea.removeAll { $0 == ideaPosition }
         } else {
-            newState.currentProject?.finalIdea = ideaPosition
+            newState.currentProject?.finalIdea.append(ideaPosition)
         }
         
     case .showIdea(let ideaPosition):
