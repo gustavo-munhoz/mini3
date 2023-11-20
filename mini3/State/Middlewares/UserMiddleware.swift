@@ -18,8 +18,7 @@ let userMiddleware: Middleware<AppState, AppAction> = { state, action in
                 cloudKitService.fetchAccountStatus { accountStatus in
                     switch accountStatus {
                     case .available:
-                        let fullName = state.user?.fullName ?? "Default User"
-                        cloudKitService.fetchUser(fullName: fullName) { result in
+                        cloudKitService.fetchUser() { result in
                             switch result {
                             case .success(let user):
                                 promise(.success(.userRecordFetchedOrCreated(user)))

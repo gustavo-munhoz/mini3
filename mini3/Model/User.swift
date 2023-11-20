@@ -6,17 +6,19 @@
 //
 
 import SwiftUI
+import CloudKit
 
 class User {
-    var fullName: String
     var goals: [Goal]
     var projects: [Project]
     var preferredColor: String
+    var avatar: String
+    var userPreferencesRecord: CKRecord?
     
-    init(fullName: String, goals: [Goal] = [], projects: [Project] = [], preferredColor: String = "AppPurple") {
-        self.fullName = fullName
+    init(goals: [Goal] = [], projects: [Project] = [], preferredColor: String = "AppPurple", avatar: String = "Avatar1") {
         self.goals = goals
         self.projects = projects
         self.preferredColor = preferredColor
+        self.avatar = avatar
     }
 }

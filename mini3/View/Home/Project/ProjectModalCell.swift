@@ -10,6 +10,7 @@ import SwiftUI
 struct ProjectModalCell: View {
     var geometry: GeometryProxy
     @State var project: Project
+    
     @EnvironmentObject var store: AppStore
     
     @State private var isEditing = false
@@ -36,8 +37,10 @@ struct ProjectModalCell: View {
                     TextField("", text: $editableContent, onCommit: {
                         withAnimation {
                             isEditing = false
-                            if editableContent.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+                            let content = editableContent.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if content != "" {
                                 store.dispatch(.updateProjectTitle(project, editableContent))
+                                store.dispatch(.updateProject(project))
                             }
                         }
                     })
@@ -142,10 +145,10 @@ struct ProjectModalCell: View {
         .padding(25)
         .background(store.state.uiColor)
         .clipShape(RoundedRectangle(cornerRadius: 4))
-        .onAppear {
-            isEditing = true
-            isTextFieldFocused = true
-            editableContent = "New Project"
-        }
+//        .onAppear {
+//            isEditing = true
+//            isTextFieldFocused = true
+//            editableContent = "New Project"
+//        }
     }
 }

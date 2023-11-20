@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Foundation
 
 struct AppState {
     var viewState: ViewState = .home
@@ -15,8 +16,7 @@ struct AppState {
     var isHiddenText : Bool = false
     var inputTextEnable : Bool = true
     var isProfileExpanded: Bool = false
-    var onboardingState: OnboardingState = .started
-    
+    var currentProject: Project?
     var uiColor: Color {
         if let preferredColor = user?.preferredColor {
             return Color.from(name: preferredColor)
@@ -25,5 +25,28 @@ struct AppState {
         }
     }
     
-    var currentProject: Project?
+    private var _onboardingState: OnboardingState = .started
+
+    var onboardingState: OnboardingState {
+        get {
+            _onboardingState
+        }
+        set {
+            _onboardingState = newValue
+            if newValue == .finished {
+                UserDefaults.standard.set(true, forKey: UserDefaultsKeys.onboardingCompleted)
+            }
+        }
+    }
+    
+    private struct UserDefaultsKeys {
+        static let onboardingCompleted = "onboardingCompleted"
+    }
+    
+    init() {
+        let onboardingCompleted = UserDefaults.standard.bool(forKey: UserDefaultsKeys.onboardingCompleted)
+        if onboardingCompleted {
+            _onboardingState = .finished
+        }
+    }
 }

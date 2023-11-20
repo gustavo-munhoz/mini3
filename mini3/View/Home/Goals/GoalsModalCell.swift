@@ -38,8 +38,10 @@ struct GoalsModalCell: View {
                 TextField("", text: $editableContent, onCommit: {
                     withAnimation {
                         isEditing = false
-                        if editableContent.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
-                            store.dispatch(.updateGoalContent(goal, editableContent))
+                        let content = editableContent.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if content != "" {
+                            store.dispatch(.updateGoalContent(goal, content))
+                            store.dispatch(.updateGoal(goal))
                         }
                     }
                 })
@@ -145,15 +147,11 @@ struct GoalsModalCell: View {
             RoundedRectangle(cornerRadius: 4)
                 .stroke(store.state.uiColor, lineWidth: 1)
         }
-        .onAppear {
-            isEditing = true
-            isTextFieldFocused = true
-            editableContent = "New Motivation"
-        }
         .onTapGesture {
             withAnimation {
                 store.dispatch(.toggleGoalCompletion(goal.id))
             }
+            store.dispatch(.updateGoal(goal))
         }
     }
 }
