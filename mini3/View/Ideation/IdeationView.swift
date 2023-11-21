@@ -45,7 +45,7 @@ struct IdeationView: View {
                 }
                 
                 //Buttons
-                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 && currentIndex == 0 || (store.state.currentProject?.selectedConcepts.count ?? 0) > 0 && currentIndex == 1 || (store.state.currentProject?.selectedVideos.count ?? 0) > 0 && currentIndex == 2  {
+//                if (store.state.currentProject?.selectedWords.count ?? 0) > 0 && currentIndex == 0 || (store.state.currentProject?.selectedConcepts.count ?? 0) > 0 && currentIndex == 1 || (store.state.currentProject?.selectedVideos.count ?? 0) > 0 && currentIndex == 2  {
                     HStack {
                         
                         Spacer()
@@ -70,7 +70,7 @@ struct IdeationView: View {
                         }
                     }
                     .foregroundColor(.white)
-                }
+                
             }
             .padding()
             .frame(width: geometry.size.width, height: geometry.size.height)
