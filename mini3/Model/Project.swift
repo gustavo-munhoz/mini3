@@ -22,7 +22,7 @@ class Project: Codable, Identifiable {
     var selectedVideos: [VideoPosition] = []
     
     var appearingIdeas : [IdeaPosition] = []
-    var finalIdea: IdeaPosition?
+    var finalIdea: [IdeaPosition?]
     
     var cloudKitRecord: CKRecord?
     
@@ -38,7 +38,7 @@ class Project: Codable, Identifiable {
     
     init(id: Int, name: String = "New Project", currentStage: IdeationStage = .words,
          selectedWords: [WordPosition] = [], selectedConcepts: [ConceptPosition] = [],
-         selectedVideos: [VideoPosition] = [], finalIdea: IdeaPosition? = nil)
+         selectedVideos: [VideoPosition] = [], finalIdea: [IdeaPosition?] = [])
     {
         self.id = id
         self.name = name
@@ -82,7 +82,7 @@ extension Project {
             record["selected_videos"] = try? JSONEncoder().encode(selectedVideos)
         }
         
-        record["final_idea"] = finalIdea as? CKRecordValue
+        record["final_idea"] = finalIdea as CKRecordValue
         
         CloudKitService.saveUpdatedRecord(record) { result in
             switch result {
@@ -108,7 +108,7 @@ extension Project {
         let selectedConcepts: [ConceptPosition] = (record["selected_concepts"] as? Data).flatMap { try? JSONDecoder().decode([ConceptPosition].self, from: $0) } ?? []
         let selectedVideos: [VideoPosition] = (record["selected_videos"] as? Data).flatMap { try? JSONDecoder().decode([VideoPosition].self, from: $0) } ?? []
 
-        self.init(id: id, name: name, currentStage: stage, selectedWords: selectedWords, selectedConcepts: selectedConcepts, selectedVideos: selectedVideos, finalIdea: finalIdea)
+        self.init(id: id, name: name, currentStage: stage, selectedWords: selectedWords, selectedConcepts: selectedConcepts, selectedVideos: selectedVideos, finalIdea: [finalIdea])
         
         self.cloudKitRecord = record
     }
